@@ -14,7 +14,7 @@
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
 
 #include "DataFormats/VertexReco/interface/Vertex.h"
-#include "EgammaAnalysis/ElectronTools/interface/ElectronEffectiveArea.h"
+//#include "EgammaAnalysis/ElectronTools/interface/ElectronEffectiveArea.h"
 
 using namespace edm;
 using namespace std;
@@ -132,14 +132,15 @@ cat::CATElectronProducer::produce(edm::Event & iEvent, const edm::EventSetup & i
 float 
 cat::CATElectronProducer::getEffArea( float dR, float scEta) 
 {
-  ElectronEffectiveArea::ElectronEffectiveAreaTarget electronEATarget; 
-  if ( runOnMC_ ) electronEATarget = ElectronEffectiveArea::kEleEAFall11MC;
-  else electronEATarget = ElectronEffectiveArea::kEleEAData2012;
+  // ElectronEffectiveArea::ElectronEffectiveAreaTarget electronEATarget; 
+  // if ( runOnMC_ ) electronEATarget = ElectronEffectiveArea::kEleEAFall11MC;
+  // else electronEATarget = ElectronEffectiveArea::kEleEAData2012;
 
-  if( dR < 0.35) 
-    return ElectronEffectiveArea::GetElectronEffectiveArea( ElectronEffectiveArea::kEleGammaAndNeutralHadronIso03, scEta, electronEATarget);
-  else 
-    return ElectronEffectiveArea::GetElectronEffectiveArea( ElectronEffectiveArea::kEleGammaAndNeutralHadronIso04, scEta, electronEATarget);
+  // if( dR < 0.35) 
+  //   return ElectronEffectiveArea::GetElectronEffectiveArea( ElectronEffectiveArea::kEleGammaAndNeutralHadronIso03, scEta, electronEATarget);
+  // else 
+  //   return ElectronEffectiveArea::GetElectronEffectiveArea( ElectronEffectiveArea::kEleGammaAndNeutralHadronIso04, scEta, electronEATarget);
+  return 0;
 }
 
 bool cat::CATElectronProducer::mcMatch( const reco::Candidate::LorentzVector& lepton, const edm::Handle<edm::View<reco::GenParticle> > & genParticles ){
