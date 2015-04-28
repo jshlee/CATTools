@@ -29,7 +29,7 @@ class RecoEventInfoProducer : public edm::EDProducer
 public:
   RecoEventInfoProducer(const edm::ParameterSet& pset);
   void produce(edm::Event& event, const edm::EventSetup& eventSetup) override;
-  void beginRun(edm::Run& run, const edm::EventSetup& eventSetup) override;
+  void beginRun(edm::Run& run, const edm::EventSetup& eventSetup);
 
 private:
   typedef std::vector<double> doubles;

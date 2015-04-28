@@ -15,12 +15,11 @@ catEventContent.extend([
 
 catEventContentExtended.extend([
     'drop *',
-    'keep *_cat*_*_*',
+    'keep *_catJets_*_*',
+    'keep *_catMuons_*_*',
+    'keep *_catMETs_*_*',
+    'keep *_me0SegmentMatching_*_*',
     'keep *_goodOfflinePrimaryVertices_*_*',
     'keep recoGenParticles_genParticles_*_*',
     'keep recoGenJets_selectedPatJetsPFlow_*_*',
-    "keep *_recoEventInfo_*_*",
-    "keep *_pdfWeight_*_*",
-    "keep *_pileupWeight_*_*",
-
     ])

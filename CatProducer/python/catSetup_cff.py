@@ -12,7 +12,7 @@ def catSetup(process, runOnMC=True, doSecVertex=True, runDependantMC=False):
     catPhotonsSource = "selectedPatPhotons"
     catTausSource = "selectedPatTausPFlow"
     catMETsSource = "patMETsPFlow"
-    catVertexSource = "offlinePrimaryVertices"
+    catVertexSource = "goodOfflinePrimaryVertices"
     catMCsource = "genParticles"
     catBeamSpot = "offlineBeamSpot"
     #catRho = "kt6PFJets"
@@ -22,18 +22,18 @@ def catSetup(process, runOnMC=True, doSecVertex=True, runDependantMC=False):
     process.catMuons.mcLabel = cms.InputTag(catMCsource)
     process.catMuons.vertexLabel = cms.InputTag(catVertexSource)
     process.catMuons.beamLineSrc = cms.InputTag(catBeamSpot)
-    process.catElectrons.src = cms.InputTag(catElectronsSource)
-    process.catElectrons.vertexLabel = cms.InputTag(catVertexSource)
-    process.catElectrons.mcLabel = cms.InputTag(catMCsource)
-    process.catElectrons.beamLineSrc = cms.InputTag(catBeamSpot)
+    #process.catElectrons.src = cms.InputTag(catElectronsSource)
+    #process.catElectrons.vertexLabel = cms.InputTag(catVertexSource)
+    #process.catElectrons.mcLabel = cms.InputTag(catMCsource)
+    #process.catElectrons.beamLineSrc = cms.InputTag(catBeamSpot)
     #process.catElectrons.rhoLabel = cms.InputTag(catRho)
-    process.catPhotons.src = cms.InputTag(catPhotonsSource)
-    process.catTaus.src = cms.InputTag(catTausSource)
+    #process.catPhotons.src = cms.InputTag(catPhotonsSource)
+    #process.catTaus.src = cms.InputTag(catTausSource)
     process.catMETs.src = cms.InputTag(catMETsSource)
-    process.catGenJets.src = cms.InputTag(catGenJetsSource)
-    process.catSecVertexs.muonSrc = cms.InputTag(catMuonsSource)
-    process.catSecVertexs.elecSrc = cms.InputTag(catElectronsSource)
-    process.catSecVertexs.vertexLabel = cms.InputTag(catVertexSource)
+    #process.catGenJets.src = cms.InputTag(catGenJetsSource)
+    #process.catSecVertexs.muonSrc = cms.InputTag(catMuonsSource)
+    #process.catSecVertexs.elecSrc = cms.InputTag(catElectronsSource)
+    #process.catSecVertexs.vertexLabel = cms.InputTag(catVertexSource)
 
     ## jet correction
     jetCorrInputFile = 'PhysicsTools/PatUtils/data/Summer12_V2_DATA_AK5PF_UncertaintySources.txt'
@@ -62,14 +62,14 @@ def catSetup(process, runOnMC=True, doSecVertex=True, runDependantMC=False):
 
     ## saved collections
 
-    process.load("CATTools.CatProducer.recoEventInfo_cfi")
-    process.recoEventInfo.vertex = cms.InputTag(catVertexSource)
-    process.p += process.recoEventInfo 
-    if runOnMC:
+    #process.load("CATTools.CatProducer.recoEventInfo_cfi")
+    #process.recoEventInfo.vertex = cms.InputTag(catVertexSource)
+    #process.p += process.recoEventInfo 
+    #if runOnMC:
         ## Load MC dependent producers
-        process.load("CATTools.CatProducer.pdfWeight_cff")
-        process.load("CATTools.CatProducer.pileupWeight_cff")
-        process.p += process.pdfWeight +  process.pileupWeight
+        #process.load("CATTools.CatProducer.pdfWeight_cff")
+        #process.load("CATTools.CatProducer.pileupWeight_cff")
+        #process.p += process.pdfWeight +  process.pileupWeight
 
         ## turning off since the default ones are outdated...
         ##
@@ -148,8 +148,11 @@ def catSetup(process, runOnMC=True, doSecVertex=True, runDependantMC=False):
     #getattr(process,catPhotonsSource).cut = cms.string("pt > 5")
 
     ### temp custom for qcd analysis
-    process.makeCatCandidates.remove(process.catGenJets)
-    process.makeCatCandidates.remove(process.catMCParticles)
+    #process.makeCatCandidates.remove(process.catGenJets)
+    #process.makeCatCandidates.remove(process.catMCParticles)
+    #process.makeCatCandidates.remove(process.catElectrons)
+    #process.makeCatCandidates.remove(process.catPhotons)
+    #process.makeCatCandidates.remove(process.catTaus)
     ### temp custom for qcd analysis
 
     ### run cat

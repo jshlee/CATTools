@@ -1,8 +1,14 @@
 from CATTools.CatProducer.catTemplate_cfg import *
+process.load('Configuration.Geometry.GeometryExtended2023SHCalNoTaper4EtaReco_cff')
+process.load('Configuration.Geometry.GeometryExtended2023SHCalNoTaper4Eta_cff')
+#process.load('Configuration.Geometry.GeometryExtended2019Reco_cff')
+#process.load('Configuration.Geometry.GeometryExtended2019_cff')
+process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
+
 ## some options
 doSecVertex=False # for jpsi candidates
-doTriggerSkim=True # for qcd trigger skim on data
-    
+doTriggerSkim=False # for qcd trigger skim on data
+
 ## setting up arguements
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('python')
@@ -47,3 +53,12 @@ process.MessageLogger.cerr.threshold = ''
 if options.maxEvents < 0:
     process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 process.options.wantSummary = False
+process.options.allowUnscheduled = cms.untracked.bool(True)
+
+process.pfIsolatedMuonsPFlow.cut = cms.string('pt > 5')
+process.pfMuonsFromVertexPFlow.d0Cut = cms.double(1000)
+process.pfMuonsFromVertexPFlow.dzSigCut = cms.double(999999.0)
+process.pfMuonsFromVertexPFlow.dzCut = cms.double(1000)
+process.pfMuonsFromVertexPFlow.d0SigCut = cms.double(999999.0)
+
+#process.pfPileUpPFlow.Enable = cms.bool(True)

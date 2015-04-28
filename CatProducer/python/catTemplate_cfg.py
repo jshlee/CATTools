@@ -9,8 +9,8 @@ process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('SimGeneral.MixingModule.mixNoPU_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('Configuration.StandardSequences.Services_cff')
-process.load("Configuration.Geometry.GeometryIdeal_cff")
-process.load("Configuration.StandardSequences.MagneticField_cff")
+#process.load("Configuration.Geometry.GeometryIdeal_cff")
+#process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
@@ -38,13 +38,13 @@ process.out = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('catTuple.root'),
     outputCommands = cms.untracked.vstring(
         'drop *',
-        'keep *_cat*_*_*',
-        'keep *_goodOfflinePrimaryVertices*_*_*',
-        'keep GenEventInfoProduct_*_*_*',
-        'keep PileupSummaryInfos_*_*_*',
-        'keep edmMergeableCounter_*_*_*',
-        'keep patTriggerPaths_patTrigger*_*_*',
-        'keep recoGenParticles_genParticles__SIM',
+        'keep *_catJets_*_*',
+        'keep *_catMuons_*_*',
+        'keep *_catMETs_*_*',
+        'keep *_me0SegmentMatching_*_*',
+        'keep *_*fflinePrimaryVertices*_*_*',
+        'keep *_ak5GenJetsNoNuPFlow_*_*',
+        'keep recoGenParticles_genParticles__*',
     )
 )
 process.outpath = cms.EndPath(process.out)
