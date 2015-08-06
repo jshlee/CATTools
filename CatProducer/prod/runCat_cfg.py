@@ -3,7 +3,7 @@ from CATTools.CatProducer.catTemplate_cfg import *
 doSecVertex=False # for jpsi candidates
 doTriggerSkim=True # for qcd trigger skim on data
 useRunDependantMC=False
-    
+
 ## setting up arguements
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('python')
