@@ -36,9 +36,9 @@ def catSetup(process, runOnMC=True, doSecVertex=True, runDependantMC=False):
     process.catSecVertexs.vertexLabel = cms.InputTag(catVertexSource)
 
     ## jet correction
-    if runDependantMC:
-        dataBaseName='sqlite:Winter14_V8_DATA.db'
-        dataBaseType='JetCorrectorParametersCollection_Winter14_V8_DATA_AK5PFchs'
+    dataBaseName='sqlite:Winter14_V8_DATA.db'
+    dataBaseType='JetCorrectorParametersCollection_Winter14_V8_DATA_AK5PFchs'
+    if runDependantMC or not runOnMC:
         if runOnMC:
             dataBaseName='sqlite:Winter14_V8_MC.db'
             dataBaseType='JetCorrectorParametersCollection_Winter14_V8_MC_AK5PFchs'
