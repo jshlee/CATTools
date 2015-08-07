@@ -20,11 +20,13 @@ namespace cat {
   public:
     MET();
     MET(const reco::LeafCandidate & aMET); 
+    float sumEt() const { return sumet_; }
+    void setSumEt(float f){ sumet_ = f; }
     virtual ~MET();
 
   private:
-
-
+    float sumet_;
+    
   };
 }
 
