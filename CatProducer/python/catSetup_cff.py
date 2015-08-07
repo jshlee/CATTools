@@ -12,12 +12,14 @@ def catSetup(process, runOnMC=True, doSecVertex=True, runDependantMC=False):
     catPhotonsSource = "selectedPatPhotons"
     catTausSource = "selectedPatTausPFlow"
     catMETsSource = "patMETsPFlow"
-    catVertexSource = "offlinePrimaryVertices"
     catMCsource = "genParticles"
     catBeamSpot = "offlineBeamSpot"
     #catRho = "kt6PFJets"
-    
+    #catVertexSource = "offlinePrimaryVertices"
+    catVertexSource='goodOfflinePrimaryVertices'
+
     process.catJets.src = cms.InputTag(catJetsSource)
+    process.catJets.vertexSrc = cms.InputTag(catVertexSource)
     process.catMuons.src = cms.InputTag(catMuonsSource)
     process.catMuons.mcLabel = cms.InputTag(catMCsource)
     process.catMuons.vertexLabel = cms.InputTag(catVertexSource)
@@ -36,13 +38,13 @@ def catSetup(process, runOnMC=True, doSecVertex=True, runDependantMC=False):
     process.catSecVertexs.vertexLabel = cms.InputTag(catVertexSource)
 
     ## jet correction
-    if runDependantMC:
+    if runDependantMC or not runOnMC:
         dataBaseName='sqlite:Winter14_V8_DATA.db'
         dataBaseType='JetCorrectorParametersCollection_Winter14_V8_DATA_AK5PFchs'
         if runOnMC:
             dataBaseName='sqlite:Winter14_V8_MC.db'
             dataBaseType='JetCorrectorParametersCollection_Winter14_V8_MC_AK5PFchs'
-            
+        print dataBaseName, dataBaseType
         process.load("CondCore.DBCommon.CondDBCommon_cfi")
         process.jec = cms.ESSource("PoolDBESSource",
         DBParameters = cms.PSet(
@@ -89,24 +91,24 @@ def catSetup(process, runOnMC=True, doSecVertex=True, runDependantMC=False):
         jetSmearHistogram = 'pfJetResolutionMCtoDataCorrLUT'
         varyByNsigmas = 1.0
         
-        process.smearedJetsRes = cms.EDProducer("SmearedPATJetProducer",
-            src = cms.InputTag(catJetsSource),
-            dRmaxGenJetMatch = cms.string('TMath::Min(0.5, 0.1 + 0.3*TMath::Exp(-0.05*(genJetPt - 10.)))'),
-            sigmaMaxGenJetMatch = cms.double(5.),                               
-            inputFileName = cms.FileInPath(jetSmearFileName),
-            lutName = cms.string(jetSmearHistogram),
-            jetResolutions = jetResolutions.METSignificance_params,
-            skipJetSelection = cms.string('jecSetsAvailable & abs(energy - correctedP4("Uncorrected").energy) > (5.*min(energy, correctedP4("Uncorrected").energy))'),
-            skipRawJetPtThreshold = cms.double(10.), # GeV
-            skipCorrJetPtThreshold = cms.double(1.e-2),
-            )
-        process.smearedJetsResDown = process.smearedJetsRes.clone(
-            shiftBy = cms.double(-1.*varyByNsigmas)
-        )
-        process.smearedJetsResUp = process.smearedJetsRes.clone(
-            shiftBy = cms.double(+1.*varyByNsigmas)
-        )
-        process.p += process.smearedJetsRes + process.smearedJetsResDown + process.smearedJetsResUp
+        ## process.smearedJetsRes = cms.EDProducer("SmearedPATJetProducer",
+        ##     src = cms.InputTag(catJetsSource),
+        ##     dRmaxGenJetMatch = cms.string('TMath::Min(0.5, 0.1 + 0.3*TMath::Exp(-0.05*(genJetPt - 10.)))'),
+        ##     sigmaMaxGenJetMatch = cms.double(5.),                               
+        ##     inputFileName = cms.FileInPath(jetSmearFileName),
+        ##     lutName = cms.string(jetSmearHistogram),
+        ##     jetResolutions = jetResolutions.METSignificance_params,
+        ##     skipJetSelection = cms.string('jecSetsAvailable & abs(energy - correctedP4("Uncorrected").energy) > (5.*min(energy, correctedP4("Uncorrected").energy))'),
+        ##     skipRawJetPtThreshold = cms.double(10.), # GeV
+        ##     skipCorrJetPtThreshold = cms.double(1.e-2),
+        ##     )
+        ## process.smearedJetsResDown = process.smearedJetsRes.clone(
+        ##     shiftBy = cms.double(-1.*varyByNsigmas)
+        ## )
+        ## process.smearedJetsResUp = process.smearedJetsRes.clone(
+        ##     shiftBy = cms.double(+1.*varyByNsigmas)
+        ## )
+        ## process.p += process.smearedJetsRes + process.smearedJetsResDown + process.smearedJetsResUp
       
         process.shiftedJetsEnUp = cms.EDProducer("ShiftedPATJetProducer",
             src = cms.InputTag(catJetsSource),
@@ -124,9 +126,9 @@ def catSetup(process, runOnMC=True, doSecVertex=True, runDependantMC=False):
 
         process.catJets.shiftedEnDownSrc = cms.InputTag("shiftedJetsEnDown")
         process.catJets.shiftedEnUpSrc = cms.InputTag("shiftedJetsEnUp")
-        process.catJets.smearedResSrc = cms.InputTag("smearedJetsRes")
-        process.catJets.smearedResDownSrc = cms.InputTag("smearedJetsResDown")
-        process.catJets.smearedResUpSrc = cms.InputTag("smearedJetsResUp")
+        #process.catJets.smearedResSrc = cms.InputTag("smearedJetsRes")
+        #process.catJets.smearedResDownSrc = cms.InputTag("smearedJetsResDown")
+        #process.catJets.smearedResUpSrc = cms.InputTag("smearedJetsResUp")
 
     if not runOnMC:
         process.makeCatCandidates.remove(process.catGenJets)

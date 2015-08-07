@@ -2,8 +2,8 @@ from CATTools.CatProducer.catTemplate_cfg import *
 ## some options
 doSecVertex=False # for jpsi candidates
 doTriggerSkim=True # for qcd trigger skim on data
-useRunDependantMC=False
-    
+useRunDependantMC=True
+
 ## setting up arguements
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('python')
@@ -42,7 +42,7 @@ process.out.outputCommands = catEventContentExtended
 process.maxEvents.input = options.maxEvents
 
 process.source.fileNames = options.inputFiles
-#process.source.skipEvents=cms.untracked.uint32(7000)
+process.source.skipEvents=cms.untracked.uint32(2073)
 ## to suppress the long output at the end of the job
 process.MessageLogger.cerr.threshold = ''
 if options.maxEvents < 0:

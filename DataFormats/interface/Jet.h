@@ -26,8 +26,13 @@ namespace cat {
     virtual ~Jet();
 
     bool LooseId() const { return LooseId_; }
+    bool TightId() const { return TightId_; }
     float pileupJetId() const { return pileupJetId_; }
     void setPileupJetId(float f) { pileupJetId_ = f;}
+    float beta() const { return beta_; }
+    void setBeta(float f) { beta_ = f;}
+    float betaStar() const { return betaStar_; }
+    void setBetaStar(float f) { betaStar_ = f;}
 
     /// \return secondary vertex b-tagging information
     // combinedSecondaryVertexBJetTags
@@ -44,6 +49,7 @@ namespace cat {
 
 
     void setLooseId(bool id) { LooseId_ = id; } 
+    void setTightId(bool id) { TightId_ = id; } 
 
     void setVtxMass(float f) { vtxMass_ = f;}
     void setVtxNtracks(int f) { vtxNtracks_ = f;}
@@ -79,8 +85,12 @@ namespace cat {
     edm::FwdRef<reco::GenJetCollection> const & genJetFwdRef() const { return genJetFwdRef_; }
 
   private:
+    
+    bool TightId_; 
     bool LooseId_; 
     float pileupJetId_;
+    float beta_;
+    float betaStar_;
 
     /// b tagging discriminators
     std::vector<std::pair<std::string, float> >  pairDiscriVector_;

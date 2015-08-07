@@ -16,6 +16,7 @@
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
 using namespace edm;
 using namespace std;
@@ -42,6 +43,7 @@ namespace cat {
 
   private:
     edm::InputTag src_;
+    edm::InputTag vertexSrc_;
 
     const std::vector<std::string> btagNames_;
     std::string uncertaintyTag_, payloadName_;
@@ -53,6 +55,7 @@ namespace cat {
 
 cat::CATJetProducer::CATJetProducer(const edm::ParameterSet & iConfig) :
   src_(iConfig.getParameter<edm::InputTag>("src")),
+  vertexSrc_(iConfig.getParameter<edm::InputTag>("vertexSrc")),
   btagNames_(iConfig.getParameter<std::vector<std::string> >("btagNames")),
   runOnMC_(iConfig.getParameter<bool>("runOnMC"))
 {
@@ -64,6 +67,8 @@ void
 cat::CATJetProducer::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
 
   Handle<View<pat::Jet> > src; iEvent.getByLabel(src_, src);
+  Handle<View<reco::Vertex> > recVtxs;
+  iEvent.getByLabel(vertexSrc_,recVtxs);
 
   edm::Handle<edm::ValueMap<float> > pileupID;
   iEvent.getByLabel("puJetMvaChs","fullDiscriminant",pileupID);
@@ -74,14 +79,63 @@ cat::CATJetProducer::produce(edm::Event & iEvent, const edm::EventSetup & iSetup
   JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
   JetCorrectionUncertainty *jecUnc = new JetCorrectionUncertainty(JetCorPar);
 
+  ///temp
+  edm::Handle<GenEventInfoProduct> eventInfos;
+  iEvent.getByLabel("generator", eventInfos);
+  double weight = eventInfos->weight();
+  ///temp
+
   auto_ptr<vector<cat::Jet> >  out(new vector<cat::Jet>());
   int j = 0;
   for (const pat::Jet &aPatJet : *src) {
-    bool looseId = checkPFJetId( aPatJet );
+      
     cat::Jet aJet(aPatJet);
-
+    
     edm::Ref<View<pat::Jet>> patJetRef(src,j);
     aJet.setPileupJetId( puIdMap[patJetRef] );
+
+    // beta and betaStar
+    reco::TrackRefVector vTrks(aPatJet.associatedTracks());
+    float sumTrkPt(0.0),sumTrkPtBeta(0.0),sumTrkPtBetaStar(0.0),beta(0.0),betaStar(0.0);
+    // Dunno how useful these are in  jets...
+    int mpuTrk(0), mlvTrk(0); // # of pile-up tracks & lead-vertex tracks ## Juska
+    int mjtTrk(0); // multiplicity of _all_ tracks in jet (also vtx-unassociated!) ## Juska
+
+    for(reco::TrackRefVector::const_iterator i_trk = vTrks.begin(); i_trk != vTrks.end(); i_trk++) {
+      if (recVtxs->size() == 0) break;
+      sumTrkPt += (*i_trk)->pt();
+      mjtTrk++; //Juska
+      //---- loop over all vertices ----------------------------
+      for(unsigned ivtx = 0;ivtx < recVtxs->size();ivtx++) {
+        //---- loop over the tracks associated with the vertex ---
+        if (!((*recVtxs)[ivtx].isFake()) && (*recVtxs)[ivtx].ndof() >= 4 && fabs((*recVtxs)[ivtx].z()) <= 24) {
+          for(reco::Vertex::trackRef_iterator i_vtxTrk = (*recVtxs)[ivtx].tracks_begin(); i_vtxTrk != (*recVtxs)[ivtx].tracks_end(); ++i_vtxTrk) {
+            //---- match the jet track to the track from the vertex ----
+            reco::TrackRef trkRef(i_vtxTrk->castTo<reco::TrackRef>());
+            //---- check if the tracks match -------------------------
+            if (trkRef == (*i_trk)) {
+              if (ivtx == 0) {
+                sumTrkPtBeta += (*i_trk)->pt();
+                mlvTrk++; //Juska
+              }
+              else {
+                sumTrkPtBetaStar += (*i_trk)->pt();
+                mpuTrk++; //Juska
+	      }
+	      break;
+	    } // if (trkRef == (*i_trk))
+	  } // for(reco::Vertex::trackRef_iterator i_vtxTrk = (*recVtxs)[ivtx].tracks_begin(); i_vtxTrk != (*recVtxs)[ivtx].tracks_end(); ++i_vtxTrk)
+	} // if (!((*recVtxs)[ivtx].isFake()) && (*recVtxs)[ivtx].ndof() >= mGoodVtxNdof && fabs((*recVtxs)[ivtx].z()) <= mGoodVtxZ)
+      } // for(unsigned ivtx = 0;ivtx < recVtxs->size();ivtx++)
+    } // for(reco::TrackRefVector::const_iterator i_trk = vTrks.begin(); i_trk != vTrks.end(); i_trk++)
+    if (sumTrkPt > 0) {
+      beta     = sumTrkPtBeta/sumTrkPt;
+      betaStar = sumTrkPtBetaStar/sumTrkPt;
+    } //if (sumTrkPt > 0)
+    aJet.setBeta( beta );
+    aJet.setBetaStar( betaStar );
+
+    // end of beta and betaStar
     
     jecUnc->setJetEta(aJet.eta());
     jecUnc->setJetPt(aJet.pt()); // here you must use the CORRECTED jet pt
@@ -119,7 +173,20 @@ cat::CATJetProducer::produce(edm::Event & iEvent, const edm::EventSetup & iSetup
 
     }
     ++j;
+
+    double NHF = aPatJet.neutralHadronEnergyFraction();
+    double NEMF = aPatJet.neutralEmEnergyFraction();
+    double CHF = aPatJet.chargedHadronEnergyFraction();
+    double MUF = aPatJet.muonEnergyFraction();
+    double CEMF = aPatJet.chargedEmEnergyFraction();
+    double NumConst = aPatJet.chargedMultiplicity()+aPatJet.neutralMultiplicity();
+    double CHM = aPatJet.chargedMultiplicity();
+    double eta = aPatJet.eta();
+    
+    bool looseId = (NHF<0.99 && NEMF<0.99 && NumConst>1 && MUF<0.8) && ((abs(eta)<=2.4 && CHF>0 && CHM>0 && CEMF<0.99) || abs(eta)>2.4);
+    bool tightId = (NHF<0.90 && NEMF<0.90 && NumConst>1 && MUF<0.8) && ((abs(eta)<=2.4 && CHF>0 && CHM>0 && CEMF<0.90) || abs(eta)>2.4);
     aJet.setLooseId( looseId );
+    aJet.setTightId( tightId );
     
     if (btagNames_.size() == 0){
       aJet.setBDiscriminators(aPatJet.getPairDiscri());
@@ -140,6 +207,22 @@ cat::CATJetProducer::produce(edm::Event & iEvent, const edm::EventSetup & iSetup
     aJet.setPartonFlavour(aPatJet.partonFlavour());
     int partonPdgId = aPatJet.genParton() ? aPatJet.genParton()->pdgId() : 0;
     aJet.setPartonPdgId(partonPdgId);
+
+    if (weight > 0.4){
+      double pthat = ( eventInfos->hasBinningValues() ? 
+		       (eventInfos->binningValues())[0] : 0.0);
+
+      std::cout <<" weight " << weight
+		<<" aPatJet.pt() " << aPatJet.pt()
+		<<" aPatJet.eta() " << aPatJet.eta()
+		<<" pthat  " << pthat
+		<<" aJet.pileupJetId()  " << aJet.pileupJetId()
+		<<" beta  " << beta
+		<<" betaStar  " << betaStar
+	//<<" eventInfos->weightProduct() " << eventInfos->weightProduct()
+		<< std::endl;
+
+    }
 
     out->push_back(aJet);
   }
@@ -162,14 +245,27 @@ bool cat::CATJetProducer::checkPFJetId(const pat::Jet & jet){
   //Loose PF Jet id
   ///https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
   //debug
+  double NHF = jet.neutralHadronEnergyFraction();
+  double NEMF = jet.neutralEmEnergyFraction();
+  double CHF = jet.chargedHadronEnergyFraction();
+  double MUF = jet.muonEnergyFraction();
+  double CEMF = jet.chargedEmEnergyFraction();
+  double NumConst = jet.chargedMultiplicity()+jet.neutralMultiplicity();
+  double CHM = jet.chargedMultiplicity();
+  double eta = jet.eta();
+  
   bool out = false;
-  if( (jet.neutralHadronEnergy() + jet.HFHadronEnergy() ) / jet.energy() < 0.99
-      &&jet.neutralEmEnergyFraction() < 0.99
-      &&jet.numberOfDaughters() > 1
-      &&(jet.chargedHadronEnergyFraction() > 0 || abs(jet.eta()) > 2.4)
-      &&(jet.chargedMultiplicity() > 0 || abs(jet.eta()) > 2.4)
-      &&(jet.chargedEmEnergyFraction() < 0.99 || abs(jet.eta()) > 2.4)
-      ) out = true;
+  // if( (jet.neutralHadronEnergy() + jet.HFHadronEnergy() ) / jet.energy() < 0.99
+  //     &&jet.neutralEmEnergyFraction() < 0.99
+  //     &&jet.numberOfDaughters() > 1
+  //     && jet.muonEnergyFraction() < 0.8
+  //     &&(jet.chargedHadronEnergyFraction() > 0 || abs(jet.eta()) > 2.4)
+  //     &&(jet.chargedMultiplicity() > 0 || abs(jet.eta()) > 2.4)
+  //     &&(jet.chargedEmEnergyFraction() < 0.99 || abs(jet.eta()) > 2.4)
+  //     )
+  //   out = true;
+  
+  out = (NHF<0.99 && NEMF<0.99 && NumConst>1 && MUF<0.8) && ((abs(eta)<=2.4 && CHF>0 && CHM>0 && CEMF<0.99) || abs(eta)>2.4);
 
   return out;
 }

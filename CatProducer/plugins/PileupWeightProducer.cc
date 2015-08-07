@@ -73,16 +73,14 @@ void PileupWeightProducer::produce(edm::Event& event, const edm::EventSetup& eve
   std::auto_ptr<double> weight(new double(1.));
   std::auto_ptr<double> weightUp(new double(1.));
   std::auto_ptr<double> weightDn(new double(1.));
-
+  
   if ( !event.isRealData() and puHandle.isValid() )
   {
     for ( auto& puInfo : *puHandle )
     {
       //const int nIntr = puInfo.getPU_NumInteractions();
       const int bx = puInfo.getBunchCrossing();
-
-      if ( bx == 0 )
-      {
+      if ( bx == 0 ){
         *nTrueIntr = puInfo.getTrueNumInteractions();
       }
     }

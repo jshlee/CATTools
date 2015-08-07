@@ -14,17 +14,21 @@ def catPatConfig(process, runOnMC=True, postfix = "PFlow", jetAlgo="AK5", doTrig
     # met cleaning events
     process.load("RecoMET.METFilters.metFilters_cff")
     process.p += process.metFilters
-    #process.load("CATTools.CatProducer.eventCleaning.scrapingFilter_cfi")
-    #process.p += process.scrapingFilter
-        
+    process.load("CATTools.CatProducer.eventCleaning.scrapingFilter_cfi")
+    process.p += process.scrapingFilter
+    process.goodVertices.filter = cms.bool(True)
+
+    #vertexCollection='offlinePrimaryVertices'
+    vertexCollection='goodOfflinePrimaryVertices'
+    
     # from https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorPFnoPU2012
     # change pvCollection to goodOfflinePrimaryVertices
     # and process.pfPileUpPFlow.checkClosestZVertex = False
     from PhysicsTools.PatAlgos.tools.pfTools import usePF2PAT,removeMCMatchingPF2PAT
     usePF2PAT(process, runPF2PAT=True, jetAlgo=jetAlgo, jetCorrections=("AK5PFchs", jecLevels),
-              pvCollection=cms.InputTag('goodOfflinePrimaryVertices'),
+              pvCollection=cms.InputTag(vertexCollection),
               runOnMC=runOnMC, postfix=postfix, typeIMetCorrections=True)
-    
+
     ## pile up corrections
     from CommonTools.ParticleFlow.Tools.enablePileUpCorrection import enablePileUpCorrectionInPF2PAT
     enablePileUpCorrectionInPF2PAT( process, postfix, sequence = "patPF2PATSequence"+postfix)
@@ -60,7 +64,7 @@ def catPatConfig(process, runOnMC=True, postfix = "PFlow", jetAlgo="AK5", doTrig
     getattr(process,"pfNoPileUp"+postfix).enable = True
     getattr(process,"pfNoMuon"+postfix).enable = True
     getattr(process,"pfNoElectron"+postfix).enable = True
-    getattr(process,"pfNoTau"+postfix).enable = False
+    getattr(process,"pfNoTau"+postfix).enable = True
     getattr(process,"pfNoJet"+postfix).enable = True
     # verbose flags for the PF2PAT modules
     getattr(process,"pfNoMuon"+postfix).verbose = False
@@ -97,7 +101,7 @@ def catPatConfig(process, runOnMC=True, postfix = "PFlow", jetAlgo="AK5", doTrig
     process.puJetMva.jets = cms.InputTag("selectedPatJetsPFlow")
     process.puJetId.jets = cms.InputTag("selectedPatJetsPFlow")
     process.puJetIdChs.jets = cms.InputTag("selectedPatJetsPFlow")
-    process.puJetIdChs.vertexes = 'goodOfflinePrimaryVertices'
+    process.puJetIdChs.vertexes = vertexCollection
     process.puJetMvaChs.jets = cms.InputTag("selectedPatJetsPFlow")
-    process.puJetMvaChs.vertexes = 'goodOfflinePrimaryVertices'
+    process.puJetMvaChs.vertexes = vertexCollection
     process.p += process.puJetIdSqeuence + process.puJetIdSqeuenceChs
