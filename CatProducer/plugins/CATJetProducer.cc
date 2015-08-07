@@ -79,12 +79,6 @@ cat::CATJetProducer::produce(edm::Event & iEvent, const edm::EventSetup & iSetup
   JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
   JetCorrectionUncertainty *jecUnc = new JetCorrectionUncertainty(JetCorPar);
 
-  ///temp
-  edm::Handle<GenEventInfoProduct> eventInfos;
-  iEvent.getByLabel("generator", eventInfos);
-  double weight = eventInfos->weight();
-  ///temp
-
   auto_ptr<vector<cat::Jet> >  out(new vector<cat::Jet>());
   int j = 0;
   for (const pat::Jet &aPatJet : *src) {
@@ -208,6 +202,13 @@ cat::CATJetProducer::produce(edm::Event & iEvent, const edm::EventSetup & iSetup
     int partonPdgId = aPatJet.genParton() ? aPatJet.genParton()->pdgId() : 0;
     aJet.setPartonPdgId(partonPdgId);
 
+
+  //     ///temp
+  // edm::Handle<GenEventInfoProduct> eventInfos;
+  // iEvent.getByLabel("generator", eventInfos);
+  // double weight = eventInfos->weight();
+  // ///temp
+
     // if (weight > 0.4){
     //   double pthat = ( eventInfos->hasBinningValues() ? 
     // 		       (eventInfos->binningValues())[0] : 0.0);
@@ -221,7 +222,6 @@ cat::CATJetProducer::produce(edm::Event & iEvent, const edm::EventSetup & iSetup
     // 		<<" betaStar  " << betaStar
     // 	//<<" eventInfos->weightProduct() " << eventInfos->weightProduct()
     // 		<< std::endl;
-
     // }
 
     out->push_back(aJet);
