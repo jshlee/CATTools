@@ -208,21 +208,21 @@ cat::CATJetProducer::produce(edm::Event & iEvent, const edm::EventSetup & iSetup
     int partonPdgId = aPatJet.genParton() ? aPatJet.genParton()->pdgId() : 0;
     aJet.setPartonPdgId(partonPdgId);
 
-    if (weight > 0.4){
-      double pthat = ( eventInfos->hasBinningValues() ? 
-		       (eventInfos->binningValues())[0] : 0.0);
+    // if (weight > 0.4){
+    //   double pthat = ( eventInfos->hasBinningValues() ? 
+    // 		       (eventInfos->binningValues())[0] : 0.0);
 
-      std::cout <<" weight " << weight
-		<<" aPatJet.pt() " << aPatJet.pt()
-		<<" aPatJet.eta() " << aPatJet.eta()
-		<<" pthat  " << pthat
-		<<" aJet.pileupJetId()  " << aJet.pileupJetId()
-		<<" beta  " << beta
-		<<" betaStar  " << betaStar
-	//<<" eventInfos->weightProduct() " << eventInfos->weightProduct()
-		<< std::endl;
+    //   std::cout <<" weight " << weight
+    // 		<<" aPatJet.pt() " << aPatJet.pt()
+    // 		<<" aPatJet.eta() " << aPatJet.eta()
+    // 		<<" pthat  " << pthat
+    // 		<<" aJet.pileupJetId()  " << aJet.pileupJetId()
+    // 		<<" beta  " << beta
+    // 		<<" betaStar  " << betaStar
+    // 	//<<" eventInfos->weightProduct() " << eventInfos->weightProduct()
+    // 		<< std::endl;
 
-    }
+    // }
 
     out->push_back(aJet);
   }
