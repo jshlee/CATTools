@@ -226,6 +226,7 @@ cat::CATJetProducer::produce(edm::Event & iEvent, const edm::EventSetup & iSetup
 
     out->push_back(aJet);
   }
+  if (jecUnc) delete jecUnc;
 
   iEvent.put(out);
 }
