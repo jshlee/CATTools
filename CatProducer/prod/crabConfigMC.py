@@ -16,7 +16,7 @@ config.Data.inputDataset = '/QCD_Pt-15to3000_TuneEE3C_Flat_8TeV_herwigpp/Summer1
 config.Data.splitting    = 'FileBased'
 config.Data.unitsPerJob  = 1
 config.Data.totalUnits   = 5000
-config.Data.publication  = config.General.transferOutputs
+config.Data.publication  = False
 config.Data.publishDataName = 'cat'
 
 config.section_("Site")

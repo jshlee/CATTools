@@ -13,16 +13,19 @@ config.JobType.inputFiles  = ['Winter14_V8_DATA.db']
 
 config.section_("Data")
 config.Data.inputDataset = '/QCD_Pt-15to3000_TuneEE3C_Flat_8TeV_herwigpp/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM'
-config.Data.splitting    = 'LumiBased'
-config.Data.unitsPerJob  = 20
+#config.Data.splitting    = 'LumiBased'
+#config.Data.unitsPerJob  = 20
+config.Data.splitting    = 'FileBased'
+config.Data.unitsPerJob  = 1
+config.Data.totalUnits   = 5000
 config.Data.lumiMask     = 'Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON.txt'
-config.Data.publication  = config.General.transferOutputs
+config.Data.publication  = False
 config.Data.publishDataName = 'cat'
 
 config.section_("Site")
 # Where the output files will be transmitted to
 #config.Site.storageSite = 'T2_KR_KNU'
 #config.Site.storageSite = 'T3_KR_KISTI'
-#config.Site.storageSite = 'T3_KR_UOS'
-config.Site.storageSite = 'T3_US_FNALLPC'
+config.Site.storageSite = 'T3_KR_UOS'
+#config.Site.storageSite = 'T3_US_FNALLPC'
 
