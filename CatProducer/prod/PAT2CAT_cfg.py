@@ -37,7 +37,8 @@ patTool(process, runOnMC, useMiniAOD)
 #### setting up cat tools
 ####################################################################
 from CATTools.CatProducer.catTools_cff import *
-catTool(process, runOnMC, doSecVertex, useMiniAOD)
+bunchCrossing=50
+catTool(process, runOnMC, doSecVertex, useMiniAOD, bunchCrossing)
 
 from CATTools.CatProducer.catEventContent_cff import *
 process.out.outputCommands = catEventContent

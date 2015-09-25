@@ -41,6 +41,8 @@ def catTool(process, runOnMC=True, doSecVertex=True, useMiniAOD = True, bunchCro
 # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription
 # recompute the T1 PFMET
     jecUncertaintyFile = "CATTools/CatProducer/data/Summer15_25nsV2_DATA_UncertaintySources_AK4PFchs.txt"
+    if bunchCrossing == 50:
+        jecUncertaintyFile = "CATTools/CatProducer/data/Summer15_50nsV5_DATA_UncertaintySources_AK4PFchs.txt"
     from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
     runMetCorAndUncFromMiniAOD( process, isData= not runOnMC, jecUncFile=jecUncertaintyFile)
 # MET without HF
@@ -88,10 +90,10 @@ def catTool(process, runOnMC=True, doSecVertex=True, useMiniAOD = True, bunchCro
     process.pfMVAMEt.srcVertices = cms.InputTag("offlineSlimmedPrimaryVertices")
     process.pfMVAMEt.srcCorrJets = cms.InputTag("calibratedAK4PFJetsForPFMVAMEt")
     process.pfMVAMEt.inputFileNames = cms.PSet(
-        U     = cms.FileInPath('RecoMET/METPUSubtraction/data/gbru_7_4_X_miniAOD_25NS_July2015.root'),
-        DPhi  = cms.FileInPath('RecoMET/METPUSubtraction/data/gbrphi_7_4_X_miniAOD_25NS_July2015.root'),
-        CovU1 = cms.FileInPath('RecoMET/METPUSubtraction/data/gbru1cov_7_4_X_miniAOD_25NS_July2015.root'),
-        CovU2 = cms.FileInPath('RecoMET/METPUSubtraction/data/gbru2cov_7_4_X_miniAOD_25NS_July2015.root')
+        U     = cms.FileInPath('RecoMET/METPUSubtraction/data/gbru_7_4_X_miniAOD_%dNS_July2015.root'%(bunchCrossing)),
+        DPhi  = cms.FileInPath('RecoMET/METPUSubtraction/data/gbrphi_7_4_X_miniAOD_%dNS_July2015.root'%(bunchCrossing)),
+        CovU1 = cms.FileInPath('RecoMET/METPUSubtraction/data/gbru1cov_7_4_X_miniAOD_%dNS_July2015.root'%(bunchCrossing)),
+        CovU2 = cms.FileInPath('RecoMET/METPUSubtraction/data/gbru2cov_7_4_X_miniAOD_%dNS_July2015.root'%(bunchCrossing))
     )
     process.calibratedAK4PFJetsForPFMVAMEt.src = cms.InputTag("ak4PFJetsForPFMVAMet")
     process.puJetIdForPFMVAMEt.jec =  cms.string('AK4PF')
@@ -141,6 +143,8 @@ def catTool(process, runOnMC=True, doSecVertex=True, useMiniAOD = True, bunchCro
 #### using GT JEC since 74X_mcRun2_asymptotic_v2 and 74X_dataRun2_v2 have the Summer15_25nsV2
     useJECfile = False 
     era = "Summer15_25nsV2"
+    if bunchCrossing == 50:
+        era = "Summer15_50nsV5"
     if runOnMC:
         era = era+"_MC"
     else:
@@ -192,10 +196,15 @@ def catTool(process, runOnMC=True, doSecVertex=True, useMiniAOD = True, bunchCro
         dataFormat = DataFormat.AOD
     else :
         dataFormat = DataFormat.MiniAOD
-    
-    switchOnVIDElectronIdProducer(process, dataFormat)    
-    my_id_modules = ['RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Spring15_25ns_V1_cff',
-                     'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Spring15_25ns_nonTrig_V1_cff',
+
+    egVersion = 1
+    if bunchCrossing == 50:
+        egVersion = 2
+        
+    switchOnVIDElectronIdProducer(process, dataFormat)
+    my_id_modules = ['RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Spring15_%dns_V%d_cff'%(bunchCrossing,egVersion),
+                     #'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Spring15_%dns_nonTrig_V1_cff'%(bunchCrossing),
+                     'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Spring15_%dns_Trig_V1_cff'%(bunchCrossing),
                      'RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV60_cff']
 
     for idmod in my_id_modules:
@@ -203,13 +212,15 @@ def catTool(process, runOnMC=True, doSecVertex=True, useMiniAOD = True, bunchCro
 
     if useMiniAOD:
         process.catElectrons.electronIDSources = cms.PSet(
-            eleVetoIdMap = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-veto"),
-            eleLooseIdMap = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-loose"),
-            eleMediumIdMap = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-medium"),
-            eleTightIdMap = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-tight"),
+            eleVetoIdMap = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-%dns-V%d-standalone-veto"%(bunchCrossing,egVersion)),
+            eleLooseIdMap = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-%dns-V%d-standalone-loose"%(bunchCrossing,egVersion)),
+            eleMediumIdMap = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-%dns-V%d-standalone-medium"%(bunchCrossing,egVersion)),
+            eleTightIdMap = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-%dns-V%d-standalone-tight"%(bunchCrossing,egVersion)),
             eleHEEPIdMap = cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV60"),
-            mvaMediumIdMap = cms.InputTag("egmGsfElectronIDs:mvaEleID-Spring15-25ns-nonTrig-V1-wp90"),
-            mvaTightIdMap = cms.InputTag("egmGsfElectronIDs:mvaEleID-Spring15-25ns-nonTrig-V1-wp80"),
+            #mvaMediumIdMap = cms.InputTag("egmGsfElectronIDs:mvaEleID-Spring15-%dns-nonTrig-V1-wp90"%(bunchCrossing)),
+            #mvaTightIdMap = cms.InputTag("egmGsfElectronIDs:mvaEleID-Spring15-%dns-nonTrig-V1-wp80"%(bunchCrossing)),
+            mvaMediumIdMap = cms.InputTag("egmGsfElectronIDs:mvaEleID-Spring15-%dns-Trig-V1-wp90"%(bunchCrossing)),
+            mvaTightIdMap = cms.InputTag("egmGsfElectronIDs:mvaEleID-Spring15-%dns-Trig-V1-wp80"%(bunchCrossing)),
         )
 #######################################################################    
     if runOnMC:## Load MC dependent producers
