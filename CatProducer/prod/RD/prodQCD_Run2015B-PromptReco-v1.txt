@@ -2,4 +2,4 @@
 /Jet/Run2015B-PromptReco-v1/MINIAOD
 /JetHT/Run2015B-17Jul2015-v1/MINIAOD
 /JetHT/Run2015B-PromptReco-v1/MINIAOD
-
+/JetHT/Run2015C-PromptReco-v1/MINIAOD
