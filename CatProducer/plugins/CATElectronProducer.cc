@@ -110,13 +110,10 @@ cat::CATElectronProducer::produce(edm::Event & iEvent, const edm::EventSetup & i
     double phIso03 = aPatElectron.userIsolation("pat::User3Iso");
     aElectron.setrelIso(0.3, chIso03, nhIso03, phIso03, elEffArea03, rhoIso, ecalpt);
     
-    aElectron.setscEta( aPatElectron.superCluster()->eta());
-    double dxy = fabs(aPatElectron.gsfTrack()->dxy(pv.position()));
-    aElectron.setdxy( dxy ) ;
-    double dz = fabs(aPatElectron.gsfTrack()->dz(pv.position()));
-    aElectron.setdz( dz ) ;
-
-    aElectron.setrho( rhoIso) ;
+    reco::GsfTrackRef theTrack = aPatElectron.gsfTrack();
+    aElectron.setDxy( theTrack->dxy(pv.position()) );
+    aElectron.setDz( theTrack->dz(pv.position()) );
+    aElectron.setVertex(Point(theTrack->vx(),theTrack->vy(),theTrack->vz()));
     
     aElectron.setPassConversionVeto( aPatElectron.passConversionVeto() );
     aElectron.setIsGsfCtfScPixChargeConsistent( aPatElectron.isGsfCtfScPixChargeConsistent());

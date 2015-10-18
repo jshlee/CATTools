@@ -206,7 +206,7 @@ cat::CATSecVertexProducer::fitTransientTracks(reco::Vertex goodPV, std::vector<T
 
 	  //if ( dca < 0. || dca > cut_DCA_ ) continue;
 	  
-	  GlobalPoint cxPt = cApp.crossingPoint();
+	  //GlobalPoint cxPt = cApp.crossingPoint();
 	  
 	  //if (std::hypot(cxPt.x(), cxPt.y()) > 120. || std::abs(cxPt.z()) > 300.) continue;
 
@@ -229,11 +229,11 @@ cat::CATSecVertexProducer::fitTransientTracks(reco::Vertex goodPV, std::vector<T
 	  typedef ROOT::Math::SVector<double, 3> SVector3;
 
 	  GlobalPoint vtxPos(vertex.x(), vertex.y(), vertex.z());
-	  SMatrixSym3D totalCov = goodPV.covariance() + vertex.covariance();
+	  //SMatrixSym3D totalCov = goodPV.covariance() + vertex.covariance();
 	  SVector3 distanceVectorXY(vertex.x() - pvx, vertex.y() - pvy, 0.);
 
 	  double rVtxMag = ROOT::Math::Mag(distanceVectorXY);
-	  double sigmaRvtxMag = sqrt(ROOT::Math::Similarity(totalCov, distanceVectorXY)) / rVtxMag;
+	  //double sigmaRvtxMag = sqrt(ROOT::Math::Similarity(totalCov, distanceVectorXY)) / rVtxMag;
 	  //	  if( rVtxMag < cut_minLxy_ || rVtxMag > cut_maxLxy_ || rVtxMag / sigmaRvtxMag < cut_vtxSignif_ ) continue;
 
 	  SVector3 distanceVector3D(vertex.x() - pvx, vertex.y() - pvy, vertex.z() - pvz);
@@ -295,13 +295,13 @@ cat::CATSecVertexProducer::fitTransientTracks(reco::Vertex goodPV, std::vector<T
 	  cat::SecVertex aSecVertex(*cand);
 	  aSecVertex.setVProb(TMath::Prob( vtxChi2, (int) vtxNdof));
 	  aSecVertex.setLxy(rVtxMag);
-	  aSecVertex.setSigmaLxy(sigmaRvtxMag);
+	  //aSecVertex.setSigmaLxy(sigmaRvtxMag);
 	  aSecVertex.setL3D(rVtxMag3D);
 	  aSecVertex.setInts(ipos,ineg);
 
-	  aSecVertex.set_dca(cApp.distance());
-	  aSecVertex.set_cxPtHypot(std::hypot(cxPt.x(), cxPt.y()));
-	  aSecVertex.set_cxPtAbs(std::abs(cxPt.z()));
+	  // aSecVertex.set_dca(cApp.distance());
+	  // aSecVertex.set_cxPtHypot(std::hypot(cxPt.x(), cxPt.y()));
+	  // aSecVertex.set_cxPtAbs(std::abs(cxPt.z()));
 
 	  out_->push_back(aSecVertex);
 	}

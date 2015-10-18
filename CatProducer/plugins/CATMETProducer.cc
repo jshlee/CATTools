@@ -47,9 +47,8 @@ cat::CATMETProducer::produce(edm::Event & iEvent, const edm::EventSetup & iSetup
   auto_ptr<vector<cat::MET> >  out(new vector<cat::MET>());
 
   for (const pat::MET & aPatMET : *src) {
-    cat::MET aMET(aPatMET);
-    aMET.setSumEt(aPatMET.sumEt());
-    out->push_back(aMET);
+    cat::MET aMET(aPatMET, aPatMET.sumEt() );
+    out->push_back(aMET);    
   }
 
   iEvent.put(out);

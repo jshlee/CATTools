@@ -1,6 +1,7 @@
 #include "DataFormats/Common/interface/Wrapper.h"
 
 #include "CATTools/DataFormats/interface/Particle.h"
+#include "CATTools/DataFormats/interface/Lepton.h"
 #include "CATTools/DataFormats/interface/Muon.h"
 #include "CATTools/DataFormats/interface/Electron.h"
 #include "CATTools/DataFormats/interface/Photon.h"
@@ -17,6 +18,14 @@
 
 #include <TMatrixD.h>
 
+#include "DataFormats/Candidate/interface/CompositePtrCandidate.h"
+namespace reco {
+  // Some dicts are missing in CMSSW
+  typedef std::vector<CompositePtrCandidate> CompositePtrCandidateCollection;
+  typedef edm::Ref<CompositePtrCandidateCollection> CompositePtrCandidateRef;
+  typedef edm::RefVector<CompositePtrCandidateCollection> CompositePtrCandidateRefVector;
+}
+
 namespace {
   struct CATTools_DataFormats {
 
@@ -25,6 +34,12 @@ namespace {
     edm::Wrapper<cat::Particle> aw;
     edm::Wrapper<std::vector<cat::Particle> > avw;
     edm::Ptr<cat::Particle> aPtr;
+
+    cat::Lepton l_;
+    std::vector<cat::Lepton> lv;
+    edm::Wrapper<cat::Lepton> lw;
+    edm::Wrapper<std::vector<cat::Lepton> > lvw;
+    edm::Ptr<cat::Lepton> lPtr;
 
     cat::Muon m_;
     std::vector<cat::Muon> mv;
@@ -86,7 +101,12 @@ namespace {
     edm::Wrapper<std::vector<cat::SecVertex> > svvw;
     edm::Ptr<cat::SecVertex> svPtr;
 
+    edm::Wrapper<reco::CompositePtrCandidateCollection> a1;
+    edm::reftobase::Holder<reco::Candidate, reco::CompositePtrCandidateRef> a2;
+    edm::reftobase::RefHolder<reco::CompositePtrCandidateRef> a3;
+    edm::reftobase::VectorHolder<reco::Candidate, reco::CompositePtrCandidateRefVector> a4;
+    edm::reftobase::RefVectorHolder<reco::CompositePtrCandidateRefVector> a5;
   };
-  
+
 
 }

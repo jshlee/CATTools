@@ -87,49 +87,6 @@ cat::CATJetProducer::produce(edm::Event & iEvent, const edm::EventSetup & iSetup
     
     edm::Ref<View<pat::Jet>> patJetRef(src,j);
     aJet.setPileupJetId( puIdMap[patJetRef] );
-
-    // beta and betaStar
-    reco::TrackRefVector vTrks(aPatJet.associatedTracks());
-    float sumTrkPt(0.0),sumTrkPtBeta(0.0),sumTrkPtBetaStar(0.0),beta(0.0),betaStar(0.0);
-    // Dunno how useful these are in  jets...
-    int mpuTrk(0), mlvTrk(0); // # of pile-up tracks & lead-vertex tracks ## Juska
-    int mjtTrk(0); // multiplicity of _all_ tracks in jet (also vtx-unassociated!) ## Juska
-
-    for(reco::TrackRefVector::const_iterator i_trk = vTrks.begin(); i_trk != vTrks.end(); i_trk++) {
-      if (recVtxs->size() == 0) break;
-      sumTrkPt += (*i_trk)->pt();
-      mjtTrk++; //Juska
-      //---- loop over all vertices ----------------------------
-      for(unsigned ivtx = 0;ivtx < recVtxs->size();ivtx++) {
-        //---- loop over the tracks associated with the vertex ---
-        if (!((*recVtxs)[ivtx].isFake()) && (*recVtxs)[ivtx].ndof() >= 4 && fabs((*recVtxs)[ivtx].z()) <= 24) {
-          for(reco::Vertex::trackRef_iterator i_vtxTrk = (*recVtxs)[ivtx].tracks_begin(); i_vtxTrk != (*recVtxs)[ivtx].tracks_end(); ++i_vtxTrk) {
-            //---- match the jet track to the track from the vertex ----
-            reco::TrackRef trkRef(i_vtxTrk->castTo<reco::TrackRef>());
-            //---- check if the tracks match -------------------------
-            if (trkRef == (*i_trk)) {
-              if (ivtx == 0) {
-                sumTrkPtBeta += (*i_trk)->pt();
-                mlvTrk++; //Juska
-              }
-              else {
-                sumTrkPtBetaStar += (*i_trk)->pt();
-                mpuTrk++; //Juska
-	      }
-	      break;
-	    } // if (trkRef == (*i_trk))
-	  } // for(reco::Vertex::trackRef_iterator i_vtxTrk = (*recVtxs)[ivtx].tracks_begin(); i_vtxTrk != (*recVtxs)[ivtx].tracks_end(); ++i_vtxTrk)
-	} // if (!((*recVtxs)[ivtx].isFake()) && (*recVtxs)[ivtx].ndof() >= mGoodVtxNdof && fabs((*recVtxs)[ivtx].z()) <= mGoodVtxZ)
-      } // for(unsigned ivtx = 0;ivtx < recVtxs->size();ivtx++)
-    } // for(reco::TrackRefVector::const_iterator i_trk = vTrks.begin(); i_trk != vTrks.end(); i_trk++)
-    if (sumTrkPt > 0) {
-      beta     = sumTrkPtBeta/sumTrkPt;
-      betaStar = sumTrkPtBetaStar/sumTrkPt;
-    } //if (sumTrkPt > 0)
-    aJet.setBeta( beta );
-    aJet.setBetaStar( betaStar );
-
-    // end of beta and betaStar
     
     jecUnc->setJetEta(aJet.eta());
     jecUnc->setJetPt(aJet.pt()); // here you must use the CORRECTED jet pt
@@ -140,31 +97,9 @@ cat::CATJetProducer::produce(edm::Event & iEvent, const edm::EventSetup & iSetup
     unc = jecUnc->getUncertainty(false);
     aJet.setShiftedEnDown( (1. - unc) );
 
-    float fJER   = 1;
-    float fJERUp = 1;
-    float fJERDn = 1;
     if (runOnMC_){
       // adding genJet
       aJet.setGenJetRef(aPatJet.genJetFwdRef());
-
-      // setting JES 
-      if ( aPatJet.genJet() ){
-	double cJER, cJERUp, cJERDn;
-	getJER(aJet.eta(), cJER, cJERUp, cJERDn);
-
-	const double jetPt = aJet.pt();
-	const double genJetPt = aPatJet.genJet()->pt();
-	const double dPt = jetPt-genJetPt;
-
-	fJER   = max(0., (genJetPt+dPt*cJER  )/jetPt);
-	fJERUp = max(0., (genJetPt+dPt*cJERUp)/jetPt);
-	fJERDn = max(0., (genJetPt+dPt*cJERDn)/jetPt);
-      
-      }
-      aJet.setSmearedRes(fJER);
-      aJet.setSmearedResDown(fJERDn);
-      aJet.setSmearedResUp(fJERUp);
-
     }
     ++j;
 
@@ -179,8 +114,9 @@ cat::CATJetProducer::produce(edm::Event & iEvent, const edm::EventSetup & iSetup
     
     bool looseId = (NHF<0.99 && NEMF<0.99 && NumConst>1 && MUF<0.8) && ((abs(eta)<=2.4 && CHF>0 && CHM>0 && CEMF<0.99) || abs(eta)>2.4);
     bool tightId = (NHF<0.90 && NEMF<0.90 && NumConst>1 && MUF<0.8) && ((abs(eta)<=2.4 && CHF>0 && CHM>0 && CEMF<0.90) || abs(eta)>2.4);
-    aJet.setLooseId( looseId );
-    aJet.setTightId( tightId );
+    aJet.setLooseJetID( looseId );
+    aJet.setTightJetID( tightId );
+
     
     if (btagNames_.size() == 0){
       aJet.setBDiscriminators(aPatJet.getPairDiscri());
@@ -201,28 +137,6 @@ cat::CATJetProducer::produce(edm::Event & iEvent, const edm::EventSetup & iSetup
     aJet.setPartonFlavour(aPatJet.partonFlavour());
     int partonPdgId = aPatJet.genParton() ? aPatJet.genParton()->pdgId() : 0;
     aJet.setPartonPdgId(partonPdgId);
-
-
-  //     ///temp
-  // edm::Handle<GenEventInfoProduct> eventInfos;
-  // iEvent.getByLabel("generator", eventInfos);
-  // double weight = eventInfos->weight();
-  // ///temp
-
-    // if (weight > 0.4){
-    //   double pthat = ( eventInfos->hasBinningValues() ? 
-    // 		       (eventInfos->binningValues())[0] : 0.0);
-
-    //   std::cout <<" weight " << weight
-    // 		<<" aPatJet.pt() " << aPatJet.pt()
-    // 		<<" aPatJet.eta() " << aPatJet.eta()
-    // 		<<" pthat  " << pthat
-    // 		<<" aJet.pileupJetId()  " << aJet.pileupJetId()
-    // 		<<" beta  " << beta
-    // 		<<" betaStar  " << betaStar
-    // 	//<<" eventInfos->weightProduct() " << eventInfos->weightProduct()
-    // 		<< std::endl;
-    // }
 
     out->push_back(aJet);
   }

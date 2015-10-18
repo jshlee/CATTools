@@ -2,13 +2,8 @@
 
 using namespace cat;
 
-/// default constructor
-MET::MET() {
+MET::MET(const reco::LeafCandidate & aMet) : Particle( aMet ) {
 }
 
-MET::MET(const reco::LeafCandidate & aMET) : Particle( aMET ) {
-}
-
-/// destructor
-MET::~MET() {
+MET::MET(const reco::LeafCandidate & aMet, float sumEt) : Particle( aMet ), sumEt_(sumEt){
 }

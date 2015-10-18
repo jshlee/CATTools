@@ -74,24 +74,21 @@ cat::CATMuonProducer::produce(edm::Event & iEvent, const edm::EventSetup & iSetu
   for (const pat::Muon & aPatMuon : *src) {
     cat::Muon aMuon(aPatMuon);
 
-    double pt    = aPatMuon.pt() ;
+    aMuon.setChargedHadronIso04( aPatMuon.pfIsolationR04().sumChargedHadronPt );
+    aMuon.setNeutralHadronIso04( aPatMuon.pfIsolationR04().sumNeutralHadronEt );
+    aMuon.setPhotonIso04( aPatMuon.pfIsolationR04().sumPhotonEt );
+    aMuon.setPUChargedHadronIso04( aPatMuon.pfIsolationR04().sumPUPt );
 
-    double chIso04 = aPatMuon.chargedHadronIso();
-    double nhIso04 = aPatMuon.neutralHadronIso();
-    double phIso04 = aPatMuon.photonIso();
-    double puIso04 = aPatMuon.puChargedHadronIso();
-    aMuon.setrelIso(0.4, chIso04, nhIso04, phIso04, puIso04, pt);
-
-    double chIso03 = aPatMuon.userIsolation("pat::User1Iso");
-    double nhIso03 = aPatMuon.userIsolation("pat::User2Iso");
-    double phIso03 = aPatMuon.userIsolation("pat::User3Iso");
-    double puIso03 = aPatMuon.userIsolation("pat::User4Iso");
-    aMuon.setrelIso(0.3, chIso03, nhIso03, phIso03, puIso03, pt);
+    aMuon.setChargedHadronIso03( aPatMuon.pfIsolationR03().sumChargedHadronPt );
+    aMuon.setNeutralHadronIso03( aPatMuon.pfIsolationR03().sumNeutralHadronEt );
+    aMuon.setPhotonIso03( aPatMuon.pfIsolationR03().sumPhotonEt );
+    aMuon.setPUChargedHadronIso03( aPatMuon.pfIsolationR03().sumPUPt );
 
     aMuon.setIsGlobalMuon( aPatMuon.isGlobalMuon() );
-    aMuon.setIsPFMuon( aPatMuon.isPFMuon() );
-    aMuon.setIsTightMuon( aPatMuon.isTightMuon(pv) );
-    aMuon.setIsLooseMuon( aPatMuon.isLooseMuon() );
+    aMuon.setIsPF( aPatMuon.isPFMuon() );
+    aMuon.setIsTight( aPatMuon.isTightMuon(pv) );
+    //aMuon.setIsMedium( aPatMuon.isMediumMuon() );
+    aMuon.setIsLoose( aPatMuon.isLooseMuon() );
     aMuon.setIsSoftMuon( aPatMuon.isSoftMuon(pv) );
 
     if (runOnMC_)

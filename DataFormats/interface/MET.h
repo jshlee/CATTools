@@ -1,10 +1,9 @@
 #ifndef CATTools_MET_H
-#define CATTools_MET_H 
+#define CATTools_MET_H
 
 #include "DataFormats/Candidate/interface/CandidateFwd.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "CATTools/DataFormats/interface/Particle.h"
-#include "DataFormats/PatCandidates/interface/MET.h"
 
 // Define typedefs for convenience
 namespace cat {
@@ -16,17 +15,19 @@ namespace cat {
 
 namespace cat {
 
-  class MET : public Particle{
+  class MET : public Particle {
   public:
-    MET();
-    MET(const reco::LeafCandidate & aMET); 
-    float sumEt() const { return sumet_; }
-    void setSumEt(float f){ sumet_ = f; }
-    virtual ~MET();
+
+    MET() {};
+    MET(const reco::LeafCandidate & aMet);
+    MET(const reco::LeafCandidate & aMet, float sumEt);
+    virtual ~MET() {};
+
+    float sumEt() const { return sumEt_; }
 
   private:
-    float sumet_;
-    
+    float sumEt_;
+
   };
 }
 

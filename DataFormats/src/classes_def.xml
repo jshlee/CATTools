@@ -6,6 +6,12 @@
   <class name="edm::Wrapper<std::vector<cat::Particle> >"/>
   <class name="edm::Ptr<cat::Particle>"/>
 
+  <class name="cat::Lepton"/>
+  <class name="std::vector<cat::Lepton>"/>
+  <class name="edm::Wrapper<cat::Lepton>"/>
+  <class name="edm::Wrapper<std::vector<cat::Lepton> >"/>
+  <class name="edm::Ptr<cat::Lepton>"/>
+  
   <class name="cat::Muon"/>
   <class name="std::vector<cat::Muon>"/>
   <class name="edm::Wrapper<cat::Muon>"/>
@@ -66,4 +72,10 @@
   <class name="edm::Wrapper<std::vector<cat::SecVertex> >"/>
   <class name="edm::Ptr<cat::SecVertex>"/>
 
+  <class name="reco::CompositePtrCandidateCollection" />
+  <class name="edm::Wrapper<reco::CompositePtrCandidateCollection>" />
+  <class name="edm::reftobase::Holder<reco::Candidate, reco::CompositePtrCandidateRef>" />
+  <class name="edm::reftobase::RefHolder<reco::CompositePtrCandidateRef>" />
+  <class name="edm::reftobase::VectorHolder<reco::Candidate, reco::CompositePtrCandidateRefVector>" />
+  <class name="edm::reftobase::RefVectorHolder<reco::CompositePtrCandidateRefVector>" />
 </lcgdict>

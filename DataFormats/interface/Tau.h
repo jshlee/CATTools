@@ -1,5 +1,5 @@
 #ifndef CATTools_Tau_H
-#define CATTools_Tau_H 
+#define CATTools_Tau_H
 
 #include "DataFormats/Candidate/interface/CandidateFwd.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
@@ -19,10 +19,8 @@ namespace cat {
   class Tau : public Particle{
   public:
     Tau();
-    Tau(const reco::LeafCandidate & aTau); 
+    Tau(const reco::LeafCandidate & aTau);
     virtual ~Tau();
-
-  private:
 
   };
 }
