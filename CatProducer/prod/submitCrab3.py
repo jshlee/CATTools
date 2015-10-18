@@ -53,7 +53,7 @@ for dataset in datasets:
 
     isMC = True
     dataSplitting   = " Data.splitting='FileBased' "
-    dataUnitsPerJob = " Data.unitsPerJob=1 "
+    dataUnitsPerJob = " Data.unitsPerJob=4 "
     dataLumiMask    = ""
     ## Special option for TTbar signal samples
     doGenTop = False

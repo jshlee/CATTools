@@ -13,7 +13,7 @@ options.register('useRunDependantMC', False, VarParsing.multiplicity.singleton, 
 options.parseArguments()
 runOnMC = options.runOnMC
 globalTag = options.globalTag
-useRunDependantMC = useRunDependantMC.globalTag
+useRunDependantMC = options.useRunDependantMC
 
 if globalTag:
     process.GlobalTag.globaltag = cms.string(globalTag)
