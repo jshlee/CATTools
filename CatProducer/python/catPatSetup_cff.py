@@ -47,7 +47,7 @@ def catPatConfig(process, runOnMC=True, postfix = "PFlow", jetAlgo="AK5", doTrig
     ### skim for qcd data
     if not runOnMC and doTriggerSkim:
         process.load('HLTrigger/HLTfilters/hltHighLevel_cfi')
-        process.hltHighLevel.HLTPaths = ['HLT_PFJet80_v*','HLT_PFJet140_v*','HLT_PFJet320_v*'] # qcd only
+        process.hltHighLevel.HLTPaths = ['HLT_Jet40_v*','HLT_Jet60_v*','HLT_Jet80_v*','HLT_PFJet80_v*','HLT_PFJet140_v*','HLT_PFJet320_v*'] # qcd only
         process.hltHighLevel.andOr = cms.bool(True)
         #process.hltJet.throw = cms.bool(True)
         process.p += process.hltHighLevel
