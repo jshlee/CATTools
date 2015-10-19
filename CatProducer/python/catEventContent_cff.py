@@ -11,17 +11,20 @@ catEventContent.extend([
     'keep *_catMETs_*_*',
     'keep *_catMCParticles_*_*',
     'keep *_catGenTops_*_*',
+    'keep edmTriggerResults_TriggerResults__*',
+    'keep *_catTrigger_*_*',
     ])
 
 catEventContentExtended.extend([
     'drop *',
     'keep *_cat*_*_*',
-    'keep *_goodOfflinePrimaryVertices_*_*',
+    #'keep *_goodOfflinePrimaryVertices_*_*',
     'keep recoGenParticles_genParticles_*_*',
     'keep recoGenJets_selectedPatJetsPFlow_*_*',
     "keep GenEventInfoProduct_generator_*_*",
     "keep *_recoEventInfo_*_*",
     "keep *_pdfWeight_*_*",
     "keep *_pileupWeight_*_*",
-
+    'keep edmTriggerResults_TriggerResults__*',
+    'keep *_catTrigger_*_*',
     ])

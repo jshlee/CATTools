@@ -60,7 +60,7 @@ for dataset in datasets:
     if "HiWinter13-STARTHI53_V28-v1" in dataset:
         doGenTop = True
     ### dirty way for now since crab3 doesnt allow lists to be passed by cmd line
-    pyCfgParams     = "config.JobType.pyCfgParams = ['runOnMC=True','useMiniAOD=%s','globalTag=%s','useRunDependantMC=%s']"%(isMiniAOD,globalTag,doGenTop)
+    pyCfgParams     = "config.JobType.pyCfgParams = ['runOnMC=True','globalTag=%s','useRunDependantMC=%s']"%(globalTag,doGenTop)
     ### MC or Data?
     if datatype == "AOD" or datatype == "MINIAOD" :
         if len(lumiMask) == 0:
@@ -78,7 +78,7 @@ for dataset in datasets:
         dataSplitting   = " Data.splitting='LumiBased' "
         dataUnitsPerJob = " Data.unitsPerJob=40 "
         dataLumiMask    = " Data.lumiMask='%s'"%(lumiMask)
-        pyCfgParams     = "config.JobType.pyCfgParams = ['runOnMC=False','useMiniAOD=%s','globalTag=%s']"%(isMiniAOD,globalTag)
+        pyCfgParams     = "config.JobType.pyCfgParams = ['runOnMC=False','globalTag=%s']"%(globalTag)
 
     ## pyCfgParams cannot be set from cmd line yet
     shutil.copy2('crabConfig.py', 'crab.py')

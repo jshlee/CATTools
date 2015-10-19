@@ -44,14 +44,6 @@ def catPatConfig(process, runOnMC=True, postfix = "PFlow", jetAlgo="AK5", doTrig
     from PhysicsTools.PatAlgos.tools.trigTools import switchOnTrigger
     switchOnTrigger( process, sequence = "patPF2PATSequence"+postfix )
 
-    ### skim for qcd data
-    if not runOnMC and doTriggerSkim:
-        process.load('HLTrigger/HLTfilters/hltHighLevel_cfi')
-        process.hltHighLevel.HLTPaths = ['HLT_Jet40_v*','HLT_Jet60_v*','HLT_Jet80_v*','HLT_PFJet80_v*','HLT_PFJet140_v*','HLT_PFJet320_v*'] # qcd only
-        process.hltHighLevel.andOr = cms.bool(True)
-        #process.hltJet.throw = cms.bool(True)
-        process.p += process.hltHighLevel
-    
     process.p += getattr(process,"patPF2PATSequence"+postfix)
     # temp fix for photons since they are not done with PF2PAT
     process.p += process.photonMatch + process.patPhotons + process.selectedPatPhotons

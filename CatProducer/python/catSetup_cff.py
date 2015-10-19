@@ -63,9 +63,11 @@ def catSetup(process, runOnMC=True, doSecVertex=True, runDependantMC=False):
         process.es_prefer_jec = cms.ESPrefer('PoolDBESSource','jec')
     ## saved collections
 
+    process.load("CATTools.CatProducer.triggerProducer_cfi")
+    process.load("CATTools.CatProducer.vertexProducer_cfi")
     process.load("CATTools.CatProducer.recoEventInfo_cfi")
     process.recoEventInfo.vertex = cms.InputTag(catVertexSource)
-    process.p += process.recoEventInfo 
+    process.p += process.recoEventInfo + process.catVertex + process.catTrigger
     if runOnMC:
         ## Load MC dependent producers
         process.load("CATTools.CatProducer.pdfWeight_cff")

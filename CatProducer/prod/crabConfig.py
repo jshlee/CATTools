@@ -8,6 +8,7 @@ config.General.transferOutputs = True
 config.section_("JobType")
 config.JobType.pluginName  = 'Analysis'
 config.JobType.psetName    = 'PAT2CAT_cfg.py'
+config.JobType.inputFiles  = ['Winter14_V8_MC.db','Winter14_V8_DATA.db']
 
 config.section_("Data")
 config.Data.publication  = False
