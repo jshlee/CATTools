@@ -2,6 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 catEventContent = cms.untracked.vstring()
 catEventContentExtended = cms.untracked.vstring()
+catEventContentRD = cms.untracked.vstring()
 
 catEventContent.extend([
     'keep *_catMuons_*_*',
@@ -28,3 +29,7 @@ catEventContentExtended.extend([
     'keep edmTriggerResults_TriggerResults__*',
     'keep *_catTrigger_*_*',
     ])
+
+catEventContentRD.extend([
+    'keep *_lumiMask*_*_*'
+])
