@@ -58,9 +58,9 @@ PileupWeightProducer::PileupWeightProducer(const edm::ParameterSet& pset)
   puToken_ = pset.getParameter<edm::InputTag>("addPileupInfo");
 
   produces<int>("nTrueInteraction");
-  produces<double>("");
-  produces<double>("up");
-  produces<double>("dn");
+  produces<float>("");
+  produces<float>("up");
+  produces<float>("dn");
 
 }
 
