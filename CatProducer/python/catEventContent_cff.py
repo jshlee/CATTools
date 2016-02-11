@@ -31,5 +31,5 @@ catEventContentExtended.extend([
     ])
 
 catEventContentRD.extend([
-    'keep *_lumiMask*_*_*'
+    'keep *_lumiMask*_*_*',
 ])
