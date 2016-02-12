@@ -11,6 +11,11 @@ def catPatConfig(process, runOnMC=True, postfix = "PFlow", jetAlgo="AK5", doTrig
     process.totaEvents = cms.EDProducer("EventCountProducer")
     process.p = cms.Path(process.totaEvents)
 
+    from FWCore.PythonUtilities.LumiList import LumiList
+    process.lumiMask = cms.EDProducer("LumiMaskProducer",
+      LumiSections = LumiList('../prod/Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON.txt').getVLuminosityBlockRange())
+    process.p += process.lumiMask
+
     # met cleaning events
     process.load("RecoMET.METFilters.metFilters_cff")
     process.p += process.metFilters
