@@ -55,7 +55,7 @@ log = $(dirSaved)/log_$(num)
 should_transfer_files = YES
 when_to_transfer_output = ON_EXIT
 transfer_input_files = h2muDraw.py
-transfer_output_files = $(f_name).png
+transfer_output_files = $(f_name).png,
 transfer_output_remaps = "$(f_name).png = $(dirSaved)/$(f_name).png"
 
 queue

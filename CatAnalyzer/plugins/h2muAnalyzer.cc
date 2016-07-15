@@ -78,7 +78,8 @@ private:
   }
   
   edm::EDGetTokenT<int> recoFiltersToken_, nGoodVertexToken_, lumiSelectionToken_;
-  edm::EDGetTokenT<float> genweightToken_, puweightToken_, puweightToken_up_, puweightToken_dn_, topPtWeight_;
+  edm::EDGetTokenT<cat::GenWeights> genWeightToken_;
+  edm::EDGetTokenT<float> puweightToken_, puweightToken_up_, puweightToken_dn_, topPtWeight_;
   edm::EDGetTokenT<vector<float>> pdfweightToken_, scaleweightToken_;
   edm::EDGetTokenT<cat::MuonCollection>     muonToken_;
   edm::EDGetTokenT<cat::ElectronCollection> elecToken_;
@@ -94,7 +95,7 @@ private:
   int b_run, b_lumi, b_event;
   int b_nvertex, b_step, b_channel, b_njet;
   bool b_step1, b_step2, b_step3, b_step4, b_step5, b_step6, b_filtered;
-  float b_tri;
+  float b_tri; 
   float b_met, b_weight, b_puweight, b_puweight_up, b_puweight_dn, b_genweight,
     b_mueffweight, b_mueffweight_up, b_mueffweight_dn,
     b_eleffweight, b_eleffweight_up, b_eleffweight_dn;
@@ -123,7 +124,7 @@ h2muAnalyzer::h2muAnalyzer(const edm::ParameterSet& iConfig)
   recoFiltersToken_ = consumes<int>(iConfig.getParameter<edm::InputTag>("recoFilters"));
   nGoodVertexToken_ = consumes<int>(iConfig.getParameter<edm::InputTag>("nGoodVertex"));
   lumiSelectionToken_ = consumes<int>(iConfig.getParameter<edm::InputTag>("lumiSelection"));
-  genweightToken_ = consumes<float>(iConfig.getParameter<edm::InputTag>("genweight"));
+  genWeightToken_ = consumes<cat::GenWeights>(iConfig.getParameter<edm::InputTag>("genweight"));
   pdfweightToken_ = consumes<vector<float>>(iConfig.getParameter<edm::InputTag>("pdfweight"));
   scaleweightToken_ = consumes<vector<float>>(iConfig.getParameter<edm::InputTag>("scaleweight"));
   puweightToken_ = consumes<float>(iConfig.getParameter<edm::InputTag>("puweight"));
@@ -266,9 +267,9 @@ void h2muAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       iEvent.getByToken(puweightToken_dn_, puweightHandle_dn);
       b_puweight_dn = *puweightHandle_dn;
 
-      edm::Handle<float> genweightHandle;
-      iEvent.getByToken(genweightToken_, genweightHandle);
-      b_genweight = (*genweightHandle);
+      edm::Handle<cat::GenWeights> genweightHandle;
+      iEvent.getByToken(genWeightToken_, genweightHandle);
+      b_genweight = genweightHandle->genWeight();
       b_weight = b_genweight*b_puweight;
 
       edm::Handle<reco::GenParticleCollection> genParticles;

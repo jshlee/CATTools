@@ -3,11 +3,8 @@
 
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
-#include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 
@@ -22,11 +19,8 @@
 #include "CATTools/CatAnalyzer/interface/KinematicSolvers.h"
 
 #include "CATTools/CommonTools/interface/AnalysisHelper.h"
-#include "CATTools/CatAnalyzer/interface/KinematicReconstruction.h"
-#include "CATTools/CatAnalyzer/interface/KinematicReconstructionSolution.h"
 #include "CATTools/CatAnalyzer/interface/analysisUtils.h"
-#include "DataFormats/Math/interface/deltaR.h"
-#include "DataFormats/Math/interface/deltaPhi.h"
+#include "CATTools/CatAnalyzer/interface/KinematicReconstruction.h"
 #include "TTree.h"
 #include "TH1D.h"
 
@@ -52,17 +46,14 @@ namespace dileptonCommonGlobal {
   typedef std::vector<LV> VLV;
 }
 
-using namespace std;
-using namespace cat;
-
-using namespace dileptonCommonGlobal;
 class dileptonCommon : public edm::one::EDAnalyzer<edm::one::SharedResources,edm::one::WatchLuminosityBlocks> {
 public:
   explicit dileptonCommon(const edm::ParameterSet&);
   ~dileptonCommon();
   virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
   virtual void analyzeCustom(const edm::Event&, const edm::EventSetup&, int sys ) ;
-  int eventSelection(const edm::Event& iEvent, const edm::EventSetup& iSetup, int sys);
+  void genInfo(const edm::Event& iEvent, const edm::EventSetup& iSetup);
+  virtual int eventSelection(const edm::Event& iEvent, const edm::EventSetup& iSetup, int sys);
   void parameterInit(const edm::ParameterSet& iConfig);
   virtual void resetBr();
   void resetBrCommon();
@@ -72,10 +63,10 @@ public:
   void setBranchCommon(TTree* tree, int sys);
   virtual void setBranchCustom(TTree* tree, int sys);
 
-  float selectMuons(const cat::MuonCollection& muons, cat::MuonCollection& selmuons, sys_e sys) const;
-  float selectElecs(const cat::ElectronCollection& elecs, cat::ElectronCollection& selelecs, sys_e sys) const;
-  cat::JetCollection selectJets(const cat::JetCollection& jets, const LeptonPtrs& recolep, sys_e sys);
-  cat::JetCollection selectBJets(const cat::JetCollection& jets) const;
+  virtual float selectMuons(const cat::MuonCollection& muons, cat::MuonCollection& selmuons, dileptonCommonGlobal::sys_e sys) const;
+  virtual float selectElecs(const cat::ElectronCollection& elecs, cat::ElectronCollection& selelecs, dileptonCommonGlobal::sys_e sys) const;
+  virtual cat::JetCollection selectJets(const cat::JetCollection& jets, const dileptonCommonGlobal::LeptonPtrs& recolep, dileptonCommonGlobal::sys_e sys);
+  virtual cat::JetCollection selectBJets(const cat::JetCollection& jets) const;
   const reco::Candidate* getLast(const reco::Candidate* p) const;
   float getMuEffSF(const cat::Lepton& p, int sys) const
   {
@@ -105,8 +96,8 @@ public:
 protected : 
   int b_run, b_lumi, b_event;
   int b_nvertex, b_step, b_channel, b_njet, b_nbjet;
-  bool b_step1, b_step2, b_step3, b_step4, b_step5, b_step6, b_step7, b_step8, b_filtered;
-  float b_tri;
+  bool b_step1, b_step2, b_step3, b_step4, b_step5, b_step6, b_step7, b_step8, b_filtered, b_keepTtbarSignal;
+  float b_tri, b_tri_up, b_tri_dn;
   float b_met, b_weight, b_puweight, b_puweight_up, b_puweight_dn, b_genweight,
     b_mueffweight, b_mueffweight_up, b_mueffweight_dn,
     b_eleffweight, b_eleffweight_up, b_eleffweight_dn,
@@ -149,28 +140,16 @@ protected :
   TH1D * h_nevents;
   // Exception for easy coding.
   std::vector<std::vector<int> > cutflow_;
-  JetCollection selectedJets ;
-  JetCollection selectedBJets;
+  cat::JetCollection selectedJets ;
+  cat::JetCollection selectedBJets;
   std::vector<const cat::Lepton*> recolep_;
-  LV met;
-  std::unique_ptr<KinematicSolver> solver_;
-  std::unique_ptr<KinematicSolver> solverPT_;
-
-private:
-  void beginLuminosityBlock(const edm::LuminosityBlock& lumi, const edm::EventSetup&) final;
-  void endLuminosityBlock(const edm::LuminosityBlock&, const edm::EventSetup&) override {};
-
-
-  ScaleFactorEvaluator muonSF_, elecSF_;
-
-  BTagWeightEvaluator csvWeight;
-  BTagWeightEvaluator bTagWeightL;
-  BTagWeightEvaluator bTagWeightM;
-  BTagWeightEvaluator bTagWeightT;
+  dileptonCommonGlobal::LV met;
+  std::unique_ptr<cat::KinematicSolver> solver_;
+  std::unique_ptr<cat::KinematicSolver> solverPT_;
 
   edm::EDGetTokenT<int> recoFiltersToken_, nGoodVertexToken_, lumiSelectionToken_;
   edm::EDGetTokenT<float> genWeightToken_;
-  edm::EDGetTokenT<vector<float>> pdfweightToken_, scaleupweightsToken_, scaledownweightsToken_;
+  edm::EDGetTokenT<std::vector<float>> pdfweightToken_, scaleupweightsToken_, scaledownweightsToken_;
   edm::EDGetTokenT<float> puweightToken_, puweightToken_up_, puweightToken_dn_, topPtWeight_;
   edm::EDGetTokenT<int> trigTokenMUEL_, trigTokenMUMU_, trigTokenELEL_;
 
@@ -180,16 +159,23 @@ private:
   edm::EDGetTokenT<cat::METCollection>      metToken_;
   edm::EDGetTokenT<reco::VertexCollection>   vtxToken_;
   edm::EDGetTokenT<int>          partonTop_channel_;
-  edm::EDGetTokenT<vector<int> > partonTop_modes_;
+  edm::EDGetTokenT<std::vector<int> > partonTop_modes_;
   edm::EDGetTokenT<reco::GenParticleCollection> partonTop_genParticles_;
   edm::EDGetTokenT<edm::View<reco::Candidate> > pseudoTop_leptons_, pseudoTop_neutrinos_, pseudoTop_jets_;
 
+private:
+  void beginLuminosityBlock(const edm::LuminosityBlock& lumi, const edm::EventSetup&) final;
+  void endLuminosityBlock(const edm::LuminosityBlock&, const edm::EventSetup&) override {};
+
+  cat::ScaleFactorEvaluator muonSF_, elecSF_;
+
+  cat::BTagWeightEvaluator csvWeight;
+  cat::BTagWeightEvaluator bTagWeightL;
+  cat::BTagWeightEvaluator bTagWeightM;
+  cat::BTagWeightEvaluator bTagWeightT;
 
   //std::unique_ptr<TtFullLepKinSolver> solver;
-
-  
-
-  const KinematicReconstruction* kinematicReconstruction;
+  std::unique_ptr<KinematicReconstruction> kinematicReconstruction;
 
 
 };
