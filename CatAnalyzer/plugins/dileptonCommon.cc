@@ -1,24 +1,39 @@
-#include"dileptonCommon.h"
+#include "CATTools/CatAnalyzer/interface/dileptonCommon.h"
+
+#include "FWCore/Framework/interface/LuminosityBlock.h"
+
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+
+#include "CATTools/CatAnalyzer/interface/TopTriggerSF.h"
+#include "CATTools/CatAnalyzer/interface/KinematicReconstructionSolution.h"
+
+#include "DataFormats/Math/interface/deltaR.h"
+#include "DataFormats/Math/interface/deltaPhi.h"
 
 using namespace std;
 using namespace cat;
 using namespace dileptonCommonGlobal;
 
-//
-// constructors and destructor
-//
-void dileptonCommon::parameterInit(const edm::ParameterSet& iConfig) {
+void dileptonCommon::parameterInit(const edm::ParameterSet& iConfig)
+{
   typedef std::vector<double> vdouble;
+
   recoFiltersToken_ = consumes<int>(iConfig.getParameter<edm::InputTag>("recoFilters"));
   nGoodVertexToken_ = consumes<int>(iConfig.getParameter<edm::InputTag>("nGoodVertex"));
   lumiSelectionToken_ = consumes<int>(iConfig.getParameter<edm::InputTag>("lumiSelection"));
+
   genWeightToken_ = consumes<float>(iConfig.getParameter<edm::InputTag>("genweight"));
-  pdfweightToken_ = consumes<vector<float>>(iConfig.getParameter<edm::InputTag>("pdfweight"));	
-  scaleweightToken_ = consumes<vector<float>>(iConfig.getParameter<edm::InputTag>("scaleweight"));
+  pdfweightToken_ = consumes<vector<float>>(iConfig.getParameter<edm::InputTag>("pdfweight"));
+  scaleupweightsToken_ = consumes<vector<float>>(iConfig.getParameter<edm::InputTag>("scaleupweight"));
+  scaledownweightsToken_ = consumes<vector<float>>(iConfig.getParameter<edm::InputTag>("scaledownweight"));
+
   topPtWeight_ = consumes<float>(iConfig.getParameter<edm::InputTag>("topPtWeight"));
+
   puweightToken_ = consumes<float>(iConfig.getParameter<edm::InputTag>("puweight"));
   puweightToken_up_ = consumes<float>(iConfig.getParameter<edm::InputTag>("puweight_up"));
   puweightToken_dn_ = consumes<float>(iConfig.getParameter<edm::InputTag>("puweight_dn"));
+
   trigTokenMUEL_ = consumes<int>(iConfig.getParameter<edm::InputTag>("trigMUEL"));
   trigTokenMUMU_ = consumes<int>(iConfig.getParameter<edm::InputTag>("trigMUMU"));
   trigTokenELEL_ = consumes<int>(iConfig.getParameter<edm::InputTag>("trigELEL"));
@@ -27,26 +42,26 @@ void dileptonCommon::parameterInit(const edm::ParameterSet& iConfig) {
   metToken_  = consumes<cat::METCollection>(iConfig.getParameter<edm::InputTag>("mets"));
   vtxToken_  = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"));
 
-
   const auto muonSet = iConfig.getParameter<edm::ParameterSet>("muon");
   muonToken_ = consumes<cat::MuonCollection>(muonSet.getParameter<edm::InputTag>("src"));
   const auto muonSFSet = muonSet.getParameter<edm::ParameterSet>("effSF");
   muonSF_.set(muonSFSet.getParameter<vdouble>("pt_bins"),
-      muonSFSet.getParameter<vdouble>("abseta_bins"),
-      muonSFSet.getParameter<vdouble>("values"),
-      muonSFSet.getParameter<vdouble>("errors"));
+              muonSFSet.getParameter<vdouble>("abseta_bins"),
+              muonSFSet.getParameter<vdouble>("values"),
+              muonSFSet.getParameter<vdouble>("errors"));
 
   const auto elecSet = iConfig.getParameter<edm::ParameterSet>("electron");
   elecToken_ = consumes<cat::ElectronCollection>(elecSet.getParameter<edm::InputTag>("src"));
   const auto elecSFSet = elecSet.getParameter<edm::ParameterSet>("effSF");
   elecSF_.set(elecSFSet.getParameter<vdouble>("pt_bins"),
-      elecSFSet.getParameter<vdouble>("abseta_bins"),
-      elecSFSet.getParameter<vdouble>("values"),
-      elecSFSet.getParameter<vdouble>("errors"));
+              elecSFSet.getParameter<vdouble>("abseta_bins"),
+              elecSFSet.getParameter<vdouble>("values"),
+              elecSFSet.getParameter<vdouble>("errors"));
 
   partonTop_channel_ = consumes<int>(iConfig.getParameter<edm::InputTag>("partonTop_channel"));
   partonTop_modes_   = consumes<vector<int> >(iConfig.getParameter<edm::InputTag>("partonTop_modes"));
   partonTop_genParticles_   = consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("partonTop_genParticles"));
+
   pseudoTop_leptons_   = consumes<edm::View<reco::Candidate> >(edm::InputTag("pseudoTop", "leptons"));
   pseudoTop_neutrinos_   = consumes<edm::View<reco::Candidate> >(edm::InputTag("pseudoTop", "neutrinos"));
   pseudoTop_jets_ = consumes<edm::View<reco::Candidate> >(edm::InputTag("pseudoTop", "jets"));
@@ -65,7 +80,7 @@ void dileptonCommon::parameterInit(const edm::ParameterSet& iConfig) {
     cerr << "Fall back to the default dummy solver\n";
     solver_.reset(new TTDileptonSolver(solverPSet)); // A dummy solver
   }
-  // PseudoTop 
+  // PseudoTop
   auto solverPSetPT = iConfig.getParameter<edm::ParameterSet>("solverPseudoTop");
   auto algoNamePT = solverPSetPT.getParameter<std::string>("algo");
   std::transform(algoNamePT.begin(), algoNamePT.end(), algoNamePT.begin(), ::toupper);
@@ -80,7 +95,7 @@ void dileptonCommon::parameterInit(const edm::ParameterSet& iConfig) {
     cerr << "Fall back to the default dummy solver\n";
     solverPT_.reset(new TTDileptonSolver(solverPSetPT)); // A dummy solver
   }
-  
+
 }
 
 void dileptonCommon::setBranch(TTree* tree, int sys) {
@@ -106,7 +121,10 @@ void dileptonCommon::setBranchCommon(TTree* tr, int sys) {
   tr->Branch("step5", &b_step5, "step5/O");
   tr->Branch("step6", &b_step6, "step6/O");
   tr->Branch("step7", &b_step7, "step7/O");
+  tr->Branch("step8", &b_step8, "step8/O");
   tr->Branch("tri", &b_tri, "tri/F");
+  tr->Branch("tri_up", &b_tri_up, "tri_up/F");
+  tr->Branch("tri_dn", &b_tri_dn, "tri_dn/F");
   tr->Branch("filtered", &b_filtered, "filtered/O");
   tr->Branch("met", &b_met, "met/F");
   tr->Branch("weight", &b_weight, "weight/F");
@@ -128,20 +146,19 @@ void dileptonCommon::setBranchCommon(TTree* tr, int sys) {
   if (sys == 0){
     tr->Branch("csvweights","std::vector<float>",&b_csvweights);
     tr->Branch("pdfWeights","std::vector<float>",&b_pdfWeights);
-    // tr->Branch("scaleWeights_up","std::vector<float>",&b_scaleWeights_up);
-    // tr->Branch("scaleWeights_dn","std::vector<float>",&b_scaleWeights_dn);
-    tr->Branch("scaleWeights","std::vector<float>",&b_scaleWeights);
+    tr->Branch("scaleWeights_up","std::vector<float>",&b_scaleWeights_up);
+    tr->Branch("scaleWeights_dn","std::vector<float>",&b_scaleWeights_dn);
   }
   tr->Branch("is3lep", &b_is3lep, "is3lep/I");
 
   tr->Branch("gen_partonChannel", &b_gen_partonChannel, "gen_partonChannel/I");
-  tr->Branch("gen_partonMode1", &b_gen_partonMode1, "gen_partonMode1/I");    
-  tr->Branch("gen_partonMode2", &b_gen_partonMode2, "gen_partonMode2/I");    
+  tr->Branch("gen_partonMode1", &b_gen_partonMode1, "gen_partonMode1/I");
+  tr->Branch("gen_partonMode2", &b_gen_partonMode2, "gen_partonMode2/I");
   tr->Branch("gen_partonMode", &b_gen_partonMode, "gen_partonMode/I");
   tr->Branch("gen_partonInPhase", &b_gen_partonInPhase, "gen_partonInPhase/O");
   tr->Branch("gen_partonInPhaseLep", &b_gen_partonInPhaseLep, "gen_partonInPhaseLep/O");
   tr->Branch("gen_partonInPhaseJet", &b_gen_partonInPhaseJet, "gen_partonInPhaseJet/O");
-  tr->Branch("gen_partonlep1_pid", &b_gen_partonlep1_pid, "gen_partonlep1_pid/I");    
+  tr->Branch("gen_partonlep1_pid", &b_gen_partonlep1_pid, "gen_partonlep1_pid/I");
   tr->Branch("gen_partonlep2_pid", &b_gen_partonlep2_pid, "gen_partonlep2_pid/I");
 
   if (sys == 0){
@@ -152,14 +169,16 @@ void dileptonCommon::setBranchCommon(TTree* tr, int sys) {
     tr->Branch("gen_partonjet2", "TLorentzVector", &b_gen_partonjet2);
     tr->Branch("gen_partontop1", "TLorentzVector", &b_gen_partontop1);
     tr->Branch("gen_partontop2", "TLorentzVector", &b_gen_partontop2);
+    tr->Branch("gen_partonnu1", "TLorentzVector", &b_gen_partonnu1);
+    tr->Branch("gen_partonnu2", "TLorentzVector", &b_gen_partonnu2);
     tr->Branch("gen_partonttbar", "TLorentzVector", &b_gen_partonttbar);
     tr->Branch("gen_partonttbar_dphi", &b_gen_partonttbar_dphi, "gen_partonttbar_dphi/F");
-  }    
+  }
 
   tr->Branch("gen_pseudoChannel", &b_gen_pseudoChannel, "gen_pseudoChannel/I");
   tr->Branch("gen_pseudoInPhase", &b_gen_pseudoInPhase, "gen_pseudoInPhase/O");
-  tr->Branch("gen_pseudolep1_pid", &b_gen_pseudolep1_pid, "gen_pseudolep1_pid/I");    
-  tr->Branch("gen_pseudolep2_pid", &b_gen_pseudolep2_pid, "gen_pseudolep2_pid/I");    
+  tr->Branch("gen_pseudolep1_pid", &b_gen_pseudolep1_pid, "gen_pseudolep1_pid/I");
+  tr->Branch("gen_pseudolep2_pid", &b_gen_pseudolep2_pid, "gen_pseudolep2_pid/I");
 
   if (sys == 0){
     tr->Branch("gen_pseudolep1", "TLorentzVector", &b_gen_pseudolep1);
@@ -169,47 +188,52 @@ void dileptonCommon::setBranchCommon(TTree* tr, int sys) {
     tr->Branch("gen_pseudojet2", "TLorentzVector", &b_gen_pseudojet2);
     tr->Branch("gen_pseudotop1", "TLorentzVector", &b_gen_pseudotop1);
     tr->Branch("gen_pseudotop2", "TLorentzVector", &b_gen_pseudotop2);
+    tr->Branch("gen_pseudonu1", "TLorentzVector", &b_gen_pseudonu1);
+    tr->Branch("gen_pseudonu2", "TLorentzVector", &b_gen_pseudonu2);
     tr->Branch("gen_pseudottbar", "TLorentzVector", &b_gen_pseudottbar);
     tr->Branch("gen_pseudottbar_dphi", &b_gen_pseudottbar_dphi, "gen_pseudottbar_dphi/F");
-  }    
+  }
 
   tr->Branch("lep1", "TLorentzVector", &b_lep1);
-  tr->Branch("lep1_pid", &b_lep1_pid, "lep1_pid/I");    
+  tr->Branch("lep1_pid", &b_lep1_pid, "lep1_pid/I");
   tr->Branch("lep2", "TLorentzVector", &b_lep2);
   tr->Branch("lep2_pid", &b_lep2_pid, "lep2_pid/I");
   tr->Branch("dilep", "TLorentzVector", &b_dilep);
-  
+
   tr->Branch("pseudojet1", "TLorentzVector", &b_pseudojet1);
   tr->Branch("pseudojet1_CSVInclV2", &b_pseudojet1_CSVInclV2, "pseudojet1_CSVInclV2/F");
   tr->Branch("pseudojet2", "TLorentzVector", &b_pseudojet2);
   tr->Branch("pseudojet2_CSVInclV2", &b_pseudojet2_CSVInclV2, "pseudojet2_CSVInclV2/F");
   tr->Branch("pseudotop1", "TLorentzVector", &b_pseudotop1);
   tr->Branch("pseudotop2", "TLorentzVector", &b_pseudotop2);
+  tr->Branch("pseudonu1", "TLorentzVector", &b_pseudonu1);
+  tr->Branch("pseudonu2", "TLorentzVector", &b_pseudonu2);
   tr->Branch("pseudottbar", "TLorentzVector", &b_pseudottbar);
   tr->Branch("pseudottbar_dphi", &b_pseudottbar_dphi, "pseudottbar_dphi/F");
-  
-  tr->Branch("partonjet1", "TLorentzVector", &b_pseudojet1);
-  tr->Branch("partonjet1_CSVInclV2", &b_pseudojet1_CSVInclV2, "partonjet1_CSVInclV2/F");
-  tr->Branch("partonjet2", "TLorentzVector", &b_pseudojet2);
-  tr->Branch("partonjet2_CSVInclV2", &b_pseudojet2_CSVInclV2, "partonjet2_CSVInclV2/F");
-  tr->Branch("partontop1", "TLorentzVector", &b_pseudotop1);
-  tr->Branch("partontop2", "TLorentzVector", &b_pseudotop2);
-  tr->Branch("partonttbar", "TLorentzVector", &b_pseudottbar);
-  tr->Branch("partonttbar_dphi", &b_pseudottbar_dphi, "partonttbar_dphi/F");
-  
+
+  tr->Branch("partonjet1", "TLorentzVector", &b_partonjet1);
+  tr->Branch("partonjet1_CSVInclV2", &b_partonjet1_CSVInclV2, "partonjet1_CSVInclV2/F");
+  tr->Branch("partonjet2", "TLorentzVector", &b_partonjet2);
+  tr->Branch("partonjet2_CSVInclV2", &b_partonjet2_CSVInclV2, "partonjet2_CSVInclV2/F");
+  tr->Branch("partontop1", "TLorentzVector", &b_partontop1);
+  tr->Branch("partontop2", "TLorentzVector", &b_partontop2);
+  tr->Branch("partonnu1", "TLorentzVector", &b_partonnu1);
+  tr->Branch("partonnu2", "TLorentzVector", &b_partonnu2);
+  tr->Branch("partonttbar", "TLorentzVector", &b_partonttbar);
+  tr->Branch("partonttbar_dphi", &b_partonttbar_dphi, "partonttbar_dphi/F");
+
   tr->Branch("desyjet1", "TLorentzVector", &b_desyjet1);
   tr->Branch("desyjet1_CSVInclV2", &b_desyjet1_CSVInclV2, "desyjet1_CSVInclV2/F");
   tr->Branch("desyjet2", "TLorentzVector", &b_desyjet2);
   tr->Branch("desyjet2_CSVInclV2", &b_desyjet2_CSVInclV2, "desyjet2_CSVInclV2/F");
   tr->Branch("desytop1", "TLorentzVector", &b_desytop1);
-  tr->Branch("desytop2", "TLorentzVector", &b_desytop2);    
+  tr->Branch("desytop2", "TLorentzVector", &b_desytop2);
   tr->Branch("desyttbar", "TLorentzVector", &b_desyttbar);
   tr->Branch("desyttbar_dphi", &b_desyttbar_dphi, "desyttbar_dphi/F");
 }
 
 dileptonCommon::dileptonCommon(const edm::ParameterSet& iConfig)
 {
-
   parameterInit(iConfig);
 
   csvWeight.initCSVWeight(false, "csvv2");
@@ -229,7 +253,7 @@ dileptonCommon::dileptonCommon(const edm::ParameterSet& iConfig)
 
   for (int i = 0; i < NCutflow; i++) cutflow_.push_back({0,0,0,0});
 
-  kinematicReconstruction = new KinematicReconstruction(1, true);
+  kinematicReconstruction.reset(new KinematicReconstruction(1, true));
 }
 
 dileptonCommon::~dileptonCommon()
@@ -254,10 +278,8 @@ void dileptonCommon::beginLuminosityBlock(const edm::LuminosityBlock& lumi, cons
   }
 }
 
-int dileptonCommon::eventSelection(const edm::Event& iEvent, const edm::EventSetup& iSetup, int sys){
-  const bool runOnMC = !iEvent.isRealData();
-  bool keepTtbarSignal = false;
-
+void dileptonCommon::genInfo(const edm::Event& iEvent, const edm::EventSetup& iSetup){
+  b_keepTtbarSignal = false;
   edm::Handle<int> partonTop_channel;
   if ( iEvent.getByToken(partonTop_channel_, partonTop_channel)){
 
@@ -265,29 +287,19 @@ int dileptonCommon::eventSelection(const edm::Event& iEvent, const edm::EventSet
     iEvent.getByToken(topPtWeight_, topPtWeightHandle);
     b_topPtWeight = *topPtWeightHandle;
 
-    if (sys == sys_nom){
-      edm::Handle<vector<float>> pdfweightHandle;
-      iEvent.getByToken(pdfweightToken_, pdfweightHandle);
-      for (const float & aPdfWeight : *pdfweightHandle){
-        b_pdfWeights.push_back(aPdfWeight);
-      }
-      edm::Handle<vector<float>> scaleweightHandle;
-      iEvent.getByToken(scaleweightToken_, scaleweightHandle);
-      for (const float & aScaleWeight : *scaleweightHandle){
-        b_scaleWeights.push_back(aScaleWeight);
-      }	
-      // edm::Handle<cat::GenWeights> genweightHandle;
-      // iEvent.getByToken(genweightsToken_, genweightHandle);
-
-      // for (const float & aPdfWeight : genweightHandle->pdfWeights() ){
-      //   b_pdfWeights.push_back(aPdfWeight);
-      // }
-      // for (const float & aScaleWeight : genweightHandle->scaleUpWeights() ){
-      //   b_scaleWeights_up.push_back(aScaleWeight);
-      // }
-      // for (const float & aScaleWeight : genweightHandle->scaleDownWeights() ){
-      //   b_scaleWeights_dn.push_back(aScaleWeight);
-      // }
+    edm::Handle<vector<float>> pdfweightHandle;
+    iEvent.getByToken(pdfweightToken_, pdfweightHandle);
+    for (const float & aPdfWeight : *pdfweightHandle){
+      b_pdfWeights.push_back(aPdfWeight);
+    }
+    edm::Handle<vector<float>> scaleupweightsHandle, scaledownweightsHandle;
+    iEvent.getByToken(scaleupweightsToken_, scaleupweightsHandle);
+    for (const float & aScaleWeight : *scaleupweightsHandle){
+      b_scaleWeights_up.push_back(aScaleWeight);
+    }
+    iEvent.getByToken(scaledownweightsToken_, scaledownweightsHandle);
+    for (const float & aScaleWeight : *scaledownweightsHandle){
+      b_scaleWeights_dn.push_back(aScaleWeight);
     }
 
     edm::Handle<vector<int> > partonTop_modes;
@@ -304,12 +316,12 @@ int dileptonCommon::eventSelection(const edm::Event& iEvent, const edm::EventSet
       b_gen_partonMode1 = (*partonTop_modes)[0];
       b_gen_partonMode2 = (*partonTop_modes)[1];
     }
-    if (b_gen_partonChannel == CH_FULLLEPTON) keepTtbarSignal = true;
-  
+    if (b_gen_partonChannel == CH_FULLLEPTON) b_keepTtbarSignal = true;
+
     if(b_gen_partonMode1==1 && b_gen_partonMode2==2)b_gen_partonMode=1;
     if(b_gen_partonMode1==2 && b_gen_partonMode2==1)b_gen_partonMode=1;
-    if(b_gen_partonMode1==1 && b_gen_partonMode2==1)b_gen_partonMode=2;
-    if(b_gen_partonMode1==2 && b_gen_partonMode2==2)b_gen_partonMode=3;
+    if(b_gen_partonMode1==1 && b_gen_partonMode2==1)b_gen_partonMode=3;
+    if(b_gen_partonMode1==2 && b_gen_partonMode2==2)b_gen_partonMode=2;
     if(b_gen_partonMode1>3 || b_gen_partonMode2>3)b_gen_partonMode=4;
 
     if ( !(partonTop_genParticles->empty()) ){
@@ -338,12 +350,16 @@ int dileptonCommon::eventSelection(const edm::Event& iEvent, const edm::EventSet
         // Get W daughters
         if ( partonW1 and partonW2 and partonB1 and partonB2 ) {
           const auto partonW11 = partonW1->daughter(0);
+          const auto partonW12 = partonW1->daughter(1);
           const auto partonW21 = partonW2->daughter(0);
+          const auto partonW22 = partonW2->daughter(1);
           if ( (partonW11->pt() > 20 && std::abs(partonW11->eta()) < 2.4 && (std::abs(partonW11->pdgId()) == 11 || std::abs(partonW11->pdgId()) == 13) ) &&
               (partonW21->pt() > 20 && std::abs(partonW21->eta()) < 2.4 && (std::abs(partonW11->pdgId()) == 11 || std::abs(partonW11->pdgId()) == 13) ))
             b_gen_partonInPhaseLep = true;
 
           // Fill lepton informations
+          b_gen_partonnu1 = ToTLorentzVector(*partonW12);
+          b_gen_partonnu2 = ToTLorentzVector(*partonW22);
           b_gen_partonlep1 = ToTLorentzVector(*partonW11);
           b_gen_partonlep2 = ToTLorentzVector(*partonW21);
           b_gen_partonlep1_pid = partonW11->pdgId();
@@ -351,7 +367,6 @@ int dileptonCommon::eventSelection(const edm::Event& iEvent, const edm::EventSet
           b_gen_partondilep = b_gen_partonlep1 + b_gen_partonlep2;
           b_gen_partonjet1 = ToTLorentzVector(*partonB1);
           b_gen_partonjet2 = ToTLorentzVector(*partonB2);
-	  
         }
       }
       if (b_gen_partonInPhaseJet && b_gen_partonInPhaseLep) b_gen_partonInPhase = true;
@@ -380,8 +395,8 @@ int dileptonCommon::eventSelection(const edm::Event& iEvent, const edm::EventSet
       if ( leptonIdxs.size() !=2 ) break;
       std::nth_element(leptonIdxs.begin(), leptonIdxs.begin()+2, leptonIdxs.end(),
           [&](size_t i, size_t j){return pseudoTopLeptonHandle->at(i).pt() > pseudoTopLeptonHandle->at(j).pt();});
-      const auto lepton1 = pseudoTopLeptonHandle->at(leptonIdxs[0]).p4();
-      const auto lepton2 = pseudoTopLeptonHandle->at(leptonIdxs[1]).p4();
+      auto lepton1 = pseudoTopLeptonHandle->at(leptonIdxs[0]).p4();
+      auto lepton2 = pseudoTopLeptonHandle->at(leptonIdxs[1]).p4();
       const int pseudoW1DauId = abs(pseudoTopLeptonHandle->at(leptonIdxs[0]).pdgId());
       const int pseudoW2DauId = abs(pseudoTopLeptonHandle->at(leptonIdxs[1]).pdgId());
       switch ( pseudoW1DauId+pseudoW2DauId ) {
@@ -390,7 +405,7 @@ int dileptonCommon::eventSelection(const edm::Event& iEvent, const edm::EventSet
         case 24: b_gen_pseudoChannel = CH_MUEL; break;
         default: b_gen_pseudoChannel = CH_NOLL;
       }
-      if (b_gen_pseudoChannel > 0) keepTtbarSignal = true;
+      if (b_gen_pseudoChannel > 0) b_keepTtbarSignal = true;
       //std::nth_element(neutrinoIdxs.begin(), neutrinoIdxs.begin()+2, neutrinoIdxs.end(),
       //                 [&](size_t i, size_t j){return pseudoTopLeptonHandle->at(i).pt() > pseudoTopLeptonHandle->at(j).pt();});
       auto nu1 = pseudoTopNeutrinoHandle->at(0).p4(), nu2 = pseudoTopNeutrinoHandle->at(1).p4();
@@ -436,16 +451,20 @@ int dileptonCommon::eventSelection(const edm::Event& iEvent, const edm::EventSet
       }
       //if (gentop1.Pt() < gentop2.Pt()) { swap(gentop1, gentop2); }
       if (pseudoTopLeptonHandle->at(leptonIdxs[0]).charge() < 0){
-	swap(gentop1, gentop2);
-	swap(bjet1, bjet2);
-      }	  
+    	swap(nu1, nu2);
+    	swap(bjet1, bjet2);
+    	swap(lepton1, lepton2);
+    	swap(gentop1, gentop2);
+      }	
+      b_gen_pseudonu1 = ToTLorentzVector(nu1);
+      b_gen_pseudonu2 = ToTLorentzVector(nu2);
       b_gen_pseudotop1 = ToTLorentzVector(gentop1);
       b_gen_pseudotop2 = ToTLorentzVector(gentop2);
       b_gen_pseudottbar = b_gen_pseudotop1 + b_gen_pseudotop2;
       b_gen_pseudottbar_dphi = b_gen_pseudotop1.DeltaPhi(b_gen_pseudotop2);
 
-      b_gen_pseudolep1 = ToTLorentzVector(pseudoTopLeptonHandle->at(leptonIdxs[0]));
-      b_gen_pseudolep2 = ToTLorentzVector(pseudoTopLeptonHandle->at(leptonIdxs[1]));
+      b_gen_pseudolep1 = ToTLorentzVector(lepton1);
+      b_gen_pseudolep2 = ToTLorentzVector(lepton2);
       b_gen_pseudodilep = b_gen_pseudolep1 + b_gen_pseudolep2;
       //b_gen_pseudolep1_pid = lepton1.pdgId();
       //b_gen_pseudolep2_pid = lepton2.pdgId();
@@ -456,6 +475,11 @@ int dileptonCommon::eventSelection(const edm::Event& iEvent, const edm::EventSet
 
     } while ( false );
   }
+  return;
+}
+int dileptonCommon::eventSelection(const edm::Event& iEvent, const edm::EventSetup& iSetup, int sys){
+  const bool runOnMC = !iEvent.isRealData();
+
   if (runOnMC){
     edm::Handle<float> puweightHandle;
     iEvent.getByToken(puweightToken_, puweightHandle);
@@ -485,7 +509,7 @@ int dileptonCommon::eventSelection(const edm::Event& iEvent, const edm::EventSet
   edm::Handle<reco::VertexCollection> vertices;
   iEvent.getByToken(vtxToken_, vertices);
   if (vertices->empty()){ // skip the event if no PV found
-    if (keepTtbarSignal) ttree_[sys]->Fill();
+    if (b_keepTtbarSignal) ttree_[sys]->Fill();
     std::cout<<"No PV"<<std::endl;
     return -1;
   }
@@ -518,7 +542,7 @@ int dileptonCommon::eventSelection(const edm::Event& iEvent, const edm::EventSet
   selectMuons(*muons, selMuons, (sys_e)sys);
   selectElecs(*electrons, selElecs, (sys_e)sys);
   if ( selMuons.size()+selElecs.size() < 2 ) {
-    if (keepTtbarSignal) ttree_[sys]->Fill();
+    if (b_keepTtbarSignal) ttree_[sys]->Fill();
     return -1;
   }
   if (sys == sys_nom) cutflow_[3][b_channel]++;
@@ -530,7 +554,11 @@ int dileptonCommon::eventSelection(const edm::Event& iEvent, const edm::EventSet
   for ( const auto& x : selElecs ) recolep.push_back(&x);
 
   sort(recolep.begin(), recolep.end(), [](const cat::Lepton* a, const cat::Lepton* b){return a->pt() > b->pt();});
+  b_is3lep = recolep.size();
   recolep.erase(recolep.begin()+2,recolep.end());
+  if ( recolep[0]->charge() < 0 ){
+    swap(recolep[0], recolep[1]);
+  }
   const cat::Lepton& recolep1 = *recolep[0];
   const cat::Lepton& recolep2 = *recolep[1];
 
@@ -549,20 +577,14 @@ int dileptonCommon::eventSelection(const edm::Event& iEvent, const edm::EventSet
   b_eleffweight_dn = getElEffSF(recolep1, -1)*getElEffSF(recolep2, -1);
 
   // Trigger results
-  // Scale factors are from AN16-025 (v4) http://cms.cern.ch/iCMS/jsp/openfile.jsp?tp=draft&files=AN2016_025_v4.pdf
-  b_tri = 0;
   edm::Handle<int> trigHandle;
-  if ( b_channel == CH_ELEL ) {
-    iEvent.getByToken(trigTokenELEL_, trigHandle);
-    if ( *trigHandle != 0 ) b_tri = 0.953; // +- 0.009
-  }
-  else if ( b_channel == CH_MUMU ) {
-    iEvent.getByToken(trigTokenMUMU_, trigHandle);
-    if ( *trigHandle != 0 ) b_tri = 0.948; // +- 0.002
-  }
-  else if ( b_channel == CH_MUEL ) {
-    iEvent.getByToken(trigTokenMUEL_, trigHandle);
-    if ( *trigHandle != 0 ) b_tri = 0.975; // +- 0.004
+  if      ( b_channel == CH_ELEL ) iEvent.getByToken(trigTokenELEL_, trigHandle);
+  else if ( b_channel == CH_MUMU ) iEvent.getByToken(trigTokenMUMU_, trigHandle);
+  else if ( b_channel == CH_MUEL ) iEvent.getByToken(trigTokenMUEL_, trigHandle);
+  if ( *trigHandle != 0 ) {
+    b_tri = computeTrigSF(recolep1, recolep2);
+    b_tri_up = computeTrigSF(recolep1, recolep2,  1);
+    b_tri_dn = computeTrigSF(recolep1, recolep2, -1);
   }
 
   b_lep1 = recolep1.tlv(); b_lep1_pid = recolep1.pdgId();
@@ -571,7 +593,7 @@ int dileptonCommon::eventSelection(const edm::Event& iEvent, const edm::EventSet
   const auto tlv_ll = recolep1.p4()+recolep2.p4();
 
   if (tlv_ll.M() < 20. || recolep1.charge() * recolep2.charge() > 0){
-    if (keepTtbarSignal) ttree_[sys]->Fill();
+    if (b_keepTtbarSignal) ttree_[sys]->Fill();
     return -1;
   }
   b_step1 = true;
@@ -642,7 +664,7 @@ int dileptonCommon::eventSelection(const edm::Event& iEvent, const edm::EventSet
       else leptonIndex.push_back(ilep);
       ++ilep;
     }
-    KinematicReconstructionSolutions kinematicReconstructionSolutions  =  kinematicReconstruction->solutions(leptonIndex, antiLeptonIndex, jetIndices, bjetIndices,  allLeptonslv, jetslv, jetBtags, metlv);
+    auto kinematicReconstructionSolutions = kinematicReconstruction->solutions(leptonIndex, antiLeptonIndex, jetIndices, bjetIndices,  allLeptonslv, jetslv, jetBtags, metlv);
 
     if (b_step == 5 and sys == sys_nom) cutflow_[10][b_channel]++;
 
@@ -650,7 +672,7 @@ int dileptonCommon::eventSelection(const edm::Event& iEvent, const edm::EventSet
       LV top1 = kinematicReconstructionSolutions.solution().top();
       LV top2 = kinematicReconstructionSolutions.solution().antiTop();
 
-      b_step7 = true;	
+      b_step8 = true;
       if (b_step == 5)
         if (sys == sys_nom)
           cutflow_[11][b_channel]++;
@@ -676,6 +698,7 @@ void dileptonCommon::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   for (int sys = 0; sys < nsys_e; ++sys){
     if (sys > 0 && !runOnMC) break;
     resetBr();
+    if( sys == 0 ) genInfo(iEvent, iSetup);
     int terminate = eventSelection(iEvent, iSetup,sys);
     if ( terminate == -1 ) continue;
     else if ( terminate == -2 ) return;
@@ -706,7 +729,7 @@ void dileptonCommon::analyzeCustom(const edm::Event& iEvent, const edm::EventSet
 
       solver_->solve(met, recolepLV1, recolepLV2, recojet2, recojet1);
       const cat::KinematicSolution sol1 = solver_->solution();
-      
+
       solver_->solve(met, recolepLV1, recolepLV2, recojet1, recojet2);
       const cat::KinematicSolution sol2 = solver_->solution();
 
@@ -725,7 +748,7 @@ void dileptonCommon::analyzeCustom(const edm::Event& iEvent, const edm::EventSet
       // pseudoTop particle level
       solverPT_->solve(met, recolepLV1, recolepLV2, recojet2, recojet1);
       const cat::KinematicSolution sol1PT = solverPT_->solution();
-      
+
       solverPT_->solve(met, recolepLV1, recolepLV2, recojet1, recojet2);
       const cat::KinematicSolution sol2PT = solverPT_->solution();
 
@@ -757,16 +780,15 @@ void dileptonCommon::analyzeCustom(const edm::Event& iEvent, const edm::EventSet
   const double maxweight = bestSol.quality();
   if ( maxweight > 0 ) {
     math::XYZTLorentzVector top1, top2, nu1, nu2, bjet1, bjet2;
+    nu1 = bestSol.nu1();
+    nu2 = bestSol.nu2();
     bjet1 = bestSol.j1();
     bjet2 = bestSol.j2();
     top1 = bestSol.t1();
     top2 = bestSol.t2();
 
-    if (recolep1.charge() < 0){
-      swap(top1, top2);
-      swap(bjet1, bjet2);
-    }
-    
+    b_partonnu1 = ToTLorentzVector(nu1);
+    b_partonnu2 = ToTLorentzVector(nu2);
     b_partonjet1 = ToTLorentzVector(bjet1);
     b_partonjet2 = ToTLorentzVector(bjet2);
     b_partontop1 = ToTLorentzVector(top1);
@@ -774,13 +796,13 @@ void dileptonCommon::analyzeCustom(const edm::Event& iEvent, const edm::EventSet
     b_partonttbar = b_partontop1 + b_partontop2;
     b_partonttbar_dphi = b_partontop1.DeltaPhi(b_partontop2);
 
-    // b_step6 = true;
-    // if (b_step == 5){
-    //   ++b_step;
-    //   if (sys == sys_nom) cutflow_[9][b_channel]++;
-    // }
+    b_step7 = true;
+    if (b_step == 5){
+      ++b_step;
+      if (sys == sys_nom) cutflow_[9][b_channel]++;
+    }
   }
-  // pseudoTop particle level    
+  // pseudoTop particle level
   std::sort(sol2BsPT.begin(), sol2BsPT.end(), greaterByQuality);
   std::sort(sol1BsPT.begin(), sol1BsPT.end(), greaterByQuality);
   std::sort(sol0BsPT.begin(), sol0BsPT.end(), greaterByQuality);
@@ -794,15 +816,15 @@ void dileptonCommon::analyzeCustom(const edm::Event& iEvent, const edm::EventSet
   const double maxweightPT = bestSolPT.quality();
   if ( maxweightPT > 0 ) {
     math::XYZTLorentzVector top1, top2, nu1, nu2, bjet1, bjet2;
+    nu1 = bestSolPT.nu1();
+    nu2 = bestSolPT.nu2();
     bjet1 = bestSolPT.j1();
     bjet2 = bestSolPT.j2();
     top1 = bestSolPT.t1();
     top2 = bestSolPT.t2();
-    
-    if (recolep1.charge() < 0){
-      swap(top1, top2);
-      swap(bjet1, bjet2);
-    }
+
+    b_pseudonu1 = ToTLorentzVector(nu1);
+    b_pseudonu2 = ToTLorentzVector(nu2);
     b_pseudojet1 = ToTLorentzVector(bjet1);
     b_pseudojet2 = ToTLorentzVector(bjet2);
     b_pseudotop1 = ToTLorentzVector(top1);
@@ -931,18 +953,26 @@ void dileptonCommon::resetBrCustom(){
 
 void dileptonCommon::resetBrCommon()
 {
-  b_nvertex = 0;b_step = -1;b_channel = 0;b_njet = 0;b_nbjet = 0;
-  b_step1 = 0;b_step2 = 0;b_step3 = 0;b_step4 = 0;b_step5 = 0;b_step6 = 0;b_step7 = 0;b_tri = 0;b_filtered = 0;
+  b_filtered = 0;
+  b_tri = b_tri_up = b_tri_dn = 0;
+
+  b_channel = 0;
+  b_step = -1;
+  b_step1 = b_step2 = b_step3 = b_step4 = b_step5 = b_step6 = b_step7 = b_step8 = 0;
+
+  b_nvertex = 0;
+  b_njet = b_nbjet = 0;
   b_met = -9;
-  b_weight = 1; b_puweight = 1; b_puweight_up = 1; b_puweight_dn = 1; b_genweight = 1;
-  b_mueffweight = 1;b_mueffweight_up = 1;b_mueffweight_dn = 1;
-  b_eleffweight = 1;b_eleffweight_up = 1;b_eleffweight_dn = 1;
-  b_btagweight = 1;b_btagweight_up = 1;b_btagweight_dn = 1;
+
+  b_weight = b_puweight = b_puweight_up = b_puweight_dn = b_genweight = 1;
+  b_mueffweight = b_mueffweight_up = b_mueffweight_dn = 1;
+  b_eleffweight = b_eleffweight_up = b_eleffweight_dn = 1;
+  b_btagweight = b_btagweight_up = b_btagweight_dn = 1;
   b_topPtWeight = 1.;
+
   b_csvweights.clear();
   b_pdfWeights.clear();
-  b_scaleWeights.clear();
-  //b_scaleWeights_up.clear(); b_scaleWeights_dn.clear();
+  b_scaleWeights_up.clear(); b_scaleWeights_dn.clear();
 
   b_is3lep = -9;
 
@@ -952,6 +982,7 @@ void dileptonCommon::resetBrCommon()
   b_gen_partonlep2 = TLorentzVector(); b_gen_partonlep2_pid = 0;
   b_gen_partontop1 = TLorentzVector(); b_gen_partontop2 = TLorentzVector();
   b_gen_partonjet1 = TLorentzVector(); b_gen_partonjet2 = TLorentzVector();
+  b_gen_partonnu1 = TLorentzVector(); b_gen_partonnu2 = TLorentzVector();
   b_gen_partondilep = TLorentzVector(); b_gen_partonttbar = TLorentzVector();
   b_gen_partonttbar_dphi = 0;
 
@@ -961,24 +992,27 @@ void dileptonCommon::resetBrCommon()
   b_gen_pseudolep2 = TLorentzVector(); b_gen_pseudolep2_pid = 0;
   b_gen_pseudotop1 = TLorentzVector(); b_gen_pseudotop2 = TLorentzVector();
   b_gen_pseudojet1 = TLorentzVector(); b_gen_pseudojet2 = TLorentzVector();
+  b_gen_pseudonu1 = TLorentzVector(); b_gen_pseudonu2 = TLorentzVector();
   b_gen_pseudodilep = TLorentzVector(); b_gen_pseudottbar = TLorentzVector();
   b_gen_pseudottbar_dphi = 0;
 
   b_lep1 = TLorentzVector(); b_lep1_pid = 0;
   b_lep2 = TLorentzVector(); b_lep2_pid = 0;
-  
+
+  b_pseudonu1 = TLorentzVector(); b_pseudonu2 = TLorentzVector();
   b_pseudojet1 = TLorentzVector(); b_pseudojet2 = TLorentzVector();
   b_pseudotop1 = TLorentzVector(); b_pseudotop2 = TLorentzVector();
   b_pseudojet1_CSVInclV2 = 0; b_pseudojet2_CSVInclV2 = 0;
   b_pseudottbar = TLorentzVector();
   b_pseudottbar_dphi = 0;
 
+  b_partonnu1 = TLorentzVector(); b_partonnu2 = TLorentzVector();
   b_partonjet1 = TLorentzVector(); b_partonjet2 = TLorentzVector();
   b_partontop1 = TLorentzVector(); b_partontop2 = TLorentzVector();
   b_partonjet1_CSVInclV2 = 0; b_partonjet2_CSVInclV2 = 0;
   b_partonttbar = TLorentzVector();
   b_partonttbar_dphi = 0;
-  
+
   b_desyjet1 = TLorentzVector(); b_desyjet2 = TLorentzVector();
   b_desytop1 = TLorentzVector(); b_desytop2 = TLorentzVector();
   b_desyjet1_CSVInclV2 = 0; b_desyjet2_CSVInclV2 = 0;
@@ -987,4 +1021,5 @@ void dileptonCommon::resetBrCommon()
 }
 
 //define this as a plug-in
+#include "FWCore/Framework/interface/MakerMacros.h"
 DEFINE_FWK_MODULE(dileptonCommon);

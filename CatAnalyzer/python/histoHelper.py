@@ -121,21 +121,30 @@ def setDefTH1Style(th1, x_name, y_name):
     ROOT.gStyle.cd()
     return th1
     
-def drawTH1(name, cmsLumi, mclist, data, x_name, y_name, doLog=False, doRatio=True, ratioRange=0.45):
+def drawTH1(name, cmsLumi, mclist, data, x_name, y_name, doLog=False, doRatio=True, ratioRange=0.45, siglist=None, legx=0.68, legfontsize=0.022):
     #leg = ROOT.TLegend(0.58,0.78,0.8,0.9)
-    leg = ROOT.TLegend(0.71,0.68,0.88,0.91)
+    leg = ROOT.TLegend(legx,0.68,0.88,0.91)
     leg.SetBorderSize(0)
     #leg.SetNColumns(2)
-    leg.SetTextSize(0.029)
+    leg.SetTextSize(legfontsize)
     leg.SetTextFont(42)
     leg.SetLineColor(0)
     leg.SetFillColor(0)
     leg.AddEntry(data,"Data","lp")
+    
+    leghist = []
+    
+    if siglist is not None:
+        #leg.AddEntry(sig, sig.GetTitle(), "l")
+        #leghist.append(sig.GetTitle())
+        for i, sig in enumerate(siglist):
+            leg.AddEntry(sig, sig.GetTitle(), "l")
+            leghist.append(sig.GetTitle())
 
     hs = ROOT.THStack("hs_%s_mc"%(name), "hs_%s_mc"%(name))
     hratio = mclist[0].Clone("hratio")
     hratio.Reset()
-    leghist = []
+    
     for i, mc in enumerate(mclist):
         hnew = mc.Clone("hnew"+mc.GetName())
         hnew.Sumw2(False)
@@ -154,6 +163,7 @@ def drawTH1(name, cmsLumi, mclist, data, x_name, y_name, doLog=False, doRatio=Tr
     data.SetMaximum(data.GetMaximum()*1.8)
     if doLog:
         #data.SetMaximum(10**7)
+        data.SetMinimum(10**-3)
         data.SetMaximum(data.GetMaximum()*100)
         
     ratio_fraction = 0
@@ -176,6 +186,11 @@ def drawTH1(name, cmsLumi, mclist, data, x_name, y_name, doLog=False, doRatio=Tr
 
     data.Draw()
     hs.Draw("same")
+    
+    if siglist is not None:
+        for i, sig in enumerate(siglist):
+            sig.Draw("samehist")
+    
     data.Draw("esamex0")
     leg.Draw("same")
     pads[0].Update()
@@ -194,10 +209,10 @@ def drawTH1(name, cmsLumi, mclist, data, x_name, y_name, doLog=False, doRatio=Tr
         p.Modified()
         p.Update()
 
-    canv.cd()    
+    canv.cd()
     iPos = 11
     if( iPos==0 ):
-        cmsLumi.relPosX = 0.12    
+        cmsLumi.relPosX = 0.12
     cmsLumi.CMS_lumi(canv, 0, iPos)
     
     canv.Modified()
@@ -205,7 +220,7 @@ def drawTH1(name, cmsLumi, mclist, data, x_name, y_name, doLog=False, doRatio=Tr
     canv.SaveAs(name)
 
 def drellYanEstimation(mc_ee_in, mc_ee_out, mc_mm_in, mc_mm_out,
-                       rd_ee_in, rd_mm_in, rd_em_in, kMM, kEE):    
+                       rd_ee_in, rd_mm_in, rd_em_in, kMM, kEE):
     #kMM = math.sqrt(rd_mm_in/rd_ee_in)/2.
     #kEE = math.sqrt(rd_ee_in/rd_mm_in)/2.
 
@@ -223,3 +238,35 @@ def findDataSet(name, datasets):
         if data["name"] == name:
             return data
     return None
+
+def adderrs(err1, err2, sign=1.):
+    return math.sqrt(err1**2+sign*err2**2)
+
+def table(mchistList, errList, signal_hist, signal_err):
+    nums = {}
+    errs = {}
+    total = total_err = 0
+
+    titles = list(set([mc.GetTitle() for mc in mchistList]))
+    for t in titles:
+        nums[t] = 0
+        errs[t] = 0
+
+    for i, mc in enumerate(mchistList):
+        nbins = mc.GetSize()-2
+        nums[mc.GetTitle()] += mc.Integral(0,nbins+1)
+        errs[mc.GetTitle()] = adderrs(errs[mc.GetTitle()], errList[i])
+
+        total += mc.Integral(0,nbins+1)
+        total_err = adderrs(total_err, errList[i])
+    
+    nums['total'] = total
+    errs['total'] = total_err
+
+    bkg = total - signal_hist.Integral(0,signal_hist.GetSize()-1)
+    bkg_err = adderrs(total_err, signal_err, -1)
+    nums['bkg'] = bkg
+    errs['bkg'] = bkg_err
+
+    return nums, errs
+
