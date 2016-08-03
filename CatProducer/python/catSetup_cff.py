@@ -138,6 +138,10 @@ def catSetup(process, runOnMC=True, doSecVertex=True, runDependantMC=False):
         process.catElectrons.runOnMC = cms.bool(False)
         process.catJets.runOnMC = cms.bool(False)
 
+        #from FWCore.PythonUtilities.LumiList import LumiList
+        #process.lumiMask = cms.EDProducer("LumiMaskProducer",
+        #    LumiSections = LumiList('../prod/Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON.txt').getVLuminosityBlockRange())
+        #process.p += process.lumiMask
     if doSecVertex:
         from TrackingTools.TransientTrack.TransientTrackBuilder_cfi import TransientTrackBuilderESProducer
         setattr(process, "TransientTrackBuilderESProducer", TransientTrackBuilderESProducer)

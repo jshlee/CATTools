@@ -37,9 +37,10 @@ catPatConfig(process, runOnMC, postfix, jetAlgo, doTriggerSkim)
 from CATTools.CatProducer.catSetup_cff import *
 catSetup(process, runOnMC, doSecVertex, useRunDependantMC)
 
-from CATTools.CatProducer.catEventContent_cff import catEventContentExtended
+from CATTools.CatProducer.catEventContent_cff import catEventContentExtended, catEventContentRD
 process.out.outputCommands = catEventContentExtended
-
+if not runOnMC:
+  process.out.outputCommands.extend(catEventContentRD)
 process.maxEvents.input = options.maxEvents
 
 process.source.fileNames = options.inputFiles
