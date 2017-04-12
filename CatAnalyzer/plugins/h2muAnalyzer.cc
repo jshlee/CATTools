@@ -78,7 +78,8 @@ private:
   }
   
   edm::EDGetTokenT<int> recoFiltersToken_, nGoodVertexToken_, lumiSelectionToken_;
-  edm::EDGetTokenT<float> genweightToken_, puweightToken_, puweightToken_up_, puweightToken_dn_, topPtWeight_;
+  edm::EDGetTokenT<cat::GenWeights> genWeightToken_;
+  edm::EDGetTokenT<float> puweightToken_, puweightToken_up_, puweightToken_dn_, topPtWeight_;
   edm::EDGetTokenT<vector<float>> pdfweightToken_, scaleweightToken_;
   edm::EDGetTokenT<cat::MuonCollection>     muonToken_;
   edm::EDGetTokenT<cat::ElectronCollection> elecToken_;
@@ -94,7 +95,7 @@ private:
   int b_run, b_lumi, b_event;
   int b_nvertex, b_step, b_channel, b_njet;
   bool b_step1, b_step2, b_step3, b_step4, b_step5, b_step6, b_filtered;
-  float b_tri;
+  float b_tri; 
   float b_met, b_weight, b_puweight, b_puweight_up, b_puweight_dn, b_genweight,
     b_mueffweight, b_mueffweight_up, b_mueffweight_dn,
     b_eleffweight, b_eleffweight_up, b_eleffweight_dn;
@@ -123,7 +124,7 @@ h2muAnalyzer::h2muAnalyzer(const edm::ParameterSet& iConfig)
   recoFiltersToken_ = consumes<int>(iConfig.getParameter<edm::InputTag>("recoFilters"));
   nGoodVertexToken_ = consumes<int>(iConfig.getParameter<edm::InputTag>("nGoodVertex"));
   lumiSelectionToken_ = consumes<int>(iConfig.getParameter<edm::InputTag>("lumiSelection"));
-  genweightToken_ = consumes<float>(iConfig.getParameter<edm::InputTag>("genweight"));
+  genWeightToken_ = consumes<cat::GenWeights>(iConfig.getParameter<edm::InputTag>("genweight"));
   pdfweightToken_ = consumes<vector<float>>(iConfig.getParameter<edm::InputTag>("pdfweight"));
   scaleweightToken_ = consumes<vector<float>>(iConfig.getParameter<edm::InputTag>("scaleweight"));
   puweightToken_ = consumes<float>(iConfig.getParameter<edm::InputTag>("puweight"));
@@ -197,7 +198,25 @@ h2muAnalyzer::h2muAnalyzer(const edm::ParameterSet& iConfig)
     tr->Branch("jet1", "TLorentzVector", &b_jet1);
     tr->Branch("jet2", "TLorentzVector", &b_jet2);
     tr->Branch("dijet", "TLorentzVector", &b_dijet);
+
+    tr->Branch("weight", &b_weight, "weight/F");
+    tr->Branch("puweight", &b_puweight, "puweight/F");
+    tr->Branch("puweight_up", &b_puweight_up, "puweight_up/F");
+    tr->Branch("puweight_dn", &b_puweight_dn, "puweight_dn/F");
+    tr->Branch("genweight", &b_genweight, "genweight/F");
+    tr->Branch("mueffweight", &b_mueffweight, "mueffweight/F");
+    tr->Branch("mueffweight_up", &b_mueffweight_up, "mueffweight_up/F");
+    tr->Branch("mueffweight_dn", &b_mueffweight_dn, "mueffweight_dn/F");
+    tr->Branch("eleffweight", &b_eleffweight, "eleffweight/F");
+    tr->Branch("eleffweight_up", &b_eleffweight_up, "eleffweight_up/F");
+    tr->Branch("eleffweight_dn", &b_eleffweight_dn, "eleffweight_dn/F");      
     
+    tr->Branch("genlep1", "TLorentzVector", &b_genlep1);
+    tr->Branch("genlep1_pid", &b_genlep1_pid, "genlep1_pid/I");    
+    tr->Branch("genlep2", "TLorentzVector", &b_genlep2);
+    tr->Branch("genlep2_pid", &b_genlep2_pid, "genlep2_pid/I");    
+    tr->Branch("gendilep", "TLorentzVector", &b_gendilep);
+
     //final hierachy
     //(e.g. In case of 0,1jet, Tight and Loose.Otherwise 2jet include VBF Tight, ggF Tight, Loose)
     tr->Branch("cat", &b_cat, "cat/I");
@@ -206,25 +225,8 @@ h2muAnalyzer::h2muAnalyzer(const edm::ParameterSet& iConfig)
     tr->Branch("cat_eta", &b_cat_eta, "cat_eta/I");
     
     if (sys == 0){
-      tr->Branch("weight", &b_weight, "weight/F");
-      tr->Branch("puweight", &b_puweight, "puweight/F");
-      tr->Branch("puweight_up", &b_puweight_up, "puweight_up/F");
-      tr->Branch("puweight_dn", &b_puweight_dn, "puweight_dn/F");
-      tr->Branch("genweight", &b_genweight, "genweight/F");
-      tr->Branch("mueffweight", &b_mueffweight, "mueffweight/F");
-      tr->Branch("mueffweight_up", &b_mueffweight_up, "mueffweight_up/F");
-      tr->Branch("mueffweight_dn", &b_mueffweight_dn, "mueffweight_dn/F");
-      tr->Branch("eleffweight", &b_eleffweight, "eleffweight/F");
-      tr->Branch("eleffweight_up", &b_eleffweight_up, "eleffweight_up/F");
-      tr->Branch("eleffweight_dn", &b_eleffweight_dn, "eleffweight_dn/F");      
       tr->Branch("pdfWeights","std::vector<float>",&b_pdfWeights);
       tr->Branch("scaleWeights","std::vector<float>",&b_scaleWeights);
-      
-      tr->Branch("genlep1", "TLorentzVector", &b_genlep1);
-      tr->Branch("genlep1_pid", &b_genlep1_pid, "genlep1_pid/I");    
-      tr->Branch("genlep2", "TLorentzVector", &b_genlep2);
-      tr->Branch("genlep2_pid", &b_genlep2_pid, "genlep2_pid/I");    
-      tr->Branch("gendilep", "TLorentzVector", &b_gendilep);
     }
   }
  
@@ -266,9 +268,9 @@ void h2muAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       iEvent.getByToken(puweightToken_dn_, puweightHandle_dn);
       b_puweight_dn = *puweightHandle_dn;
 
-      edm::Handle<float> genweightHandle;
-      iEvent.getByToken(genweightToken_, genweightHandle);
-      b_genweight = (*genweightHandle);
+      edm::Handle<cat::GenWeights> genweightHandle;
+      iEvent.getByToken(genWeightToken_, genweightHandle);
+      b_genweight = genweightHandle->genWeight();
       b_weight = b_genweight*b_puweight;
 
       edm::Handle<reco::GenParticleCollection> genParticles;
@@ -506,7 +508,7 @@ void h2muAnalyzer::resetBr()
   b_nvertex = 0;b_step = 0;b_channel = 0;b_njet = 0;
   b_step1 = 0;b_step2 = 0;b_step3 = 0;b_step4 = 0;b_step5 = 0;b_step6 = 0;b_tri = 0;b_filtered = 0;
   b_met = 0;
-  b_weight = 0; b_puweight = 0; b_puweight_up = 0; b_puweight_dn = 0; b_genweight = 0;
+  b_weight = 1; b_puweight = 0; b_puweight_up = 0; b_puweight_dn = 0; b_genweight = 0;
   b_mueffweight = 0;b_mueffweight_up = 0;b_mueffweight_dn = 0;
   b_eleffweight = 0;b_eleffweight_up = 0;b_eleffweight_dn = 0;
   b_pdfWeights.clear();

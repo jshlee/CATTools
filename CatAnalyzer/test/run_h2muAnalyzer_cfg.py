@@ -16,7 +16,8 @@ process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring(),)
 #process.source.fileNames = ['file:%s/src/CATTools/CatProducer/prod/catTuple.root'%os.environ["CMSSW_BASE"]]
 
 process.source.fileNames = []
-txtfile = '../data/dataset/dataset_SingleMuon_Run2015C.txt'
+#txtfile = '../data/dataset/dataset_SingleMuon_Run2015C.txt'
+txtfile = '../data/dataset/dataset_DYJets_MG.txt'
 f = open(txtfile)
 for line in f:
     if '#' not in line:
@@ -27,10 +28,10 @@ useSilver = False
 catmet = 'catMETs'
 lumiMask = 'lumiMask'
 pileupWeight = 'pileupWeight'
-if useSilver:
-    catmet = 'catMETsNoHF'
-    lumiMask = 'lumiMaskSilver'
-    pileupWeight = 'pileupWeightSilver'
+#if useSilver:
+#    catmet = 'catMETsNoHF'
+#    lumiMask = 'lumiMaskSilver'
+#    pileupWeight = 'pileupWeightSilver'
 
 process.load("CATTools.CatAnalyzer.filters_cff")
 from CATTools.CatAnalyzer.leptonSF_cff import *
@@ -39,7 +40,8 @@ process.cattree = cms.EDAnalyzer("h2muAnalyzer",
     recoFilters = cms.InputTag("filterRECO"),
     nGoodVertex = cms.InputTag("catVertex","nGoodPV"),
     lumiSelection = cms.InputTag(lumiMask),
-    genweight = cms.InputTag("genWeight","genWeight"),
+    #genweight = cms.InputTag("genWeight","genWeight"),
+    genweight = cms.InputTag("genWeight"),
     pdfweight = cms.InputTag("genWeight","pdfWeights"),
     scaleweight = cms.InputTag("genWeight","scaleWeights"),
     puweight = cms.InputTag(pileupWeight),
