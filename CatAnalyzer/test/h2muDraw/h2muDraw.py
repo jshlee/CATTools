@@ -17,22 +17,27 @@ h2muDraw.py -c 'll_m>50&&step>=5&&isTight==1&&filtered==1' -b [100,-3,3] -p lep1
 '''
 
 json_used = 'Golden'
-datalumi = 15920 #15.92fb-1
+datalumi = 37090 #15.92fb-1
 version = os.environ['CMSSW_VERSION']
 
-rootfileDir = "/xrootd/store/user/pseudotop/ntuples/results_merged/%s/h2muAnalyzer_"%version
+rootfileDir = "/xrootd/store/user/daniellee/cattree/CMSSW_8_0_26_patch1/results_merged/h2muAnalyzer_"
 #rootfileDir = "/xrootd/store/user/pseudotop/ntuples/results_merged/v7-6-3/h2muAnalyzer_"
 #rootfileDir = "%s/src/CATTools/CatAnalyzer/test/results_merged/h2muAnalyzer_" % os.environ['CMSSW_BASE']
 #rootfileDir = "%s/cattuples/20160324_163101/results_merged/h2muAnalyzer_" % os.environ['HOME_SCRATCH']
 
 CMS_lumi.lumi_sqrtS = "%.2f fb^{-1}, #sqrt{s} = 13 TeV 25ns "%(float(datalumi)/1000)
 mcfilelist = [
+              'WMinusH_HToMuMu',
+              'WPlusH_HToMuMu',
+              'ZH_HToMuMu',
+              'VBF_HToMuMu',
               'GG_HToMuMu',
+              'ttH_nonbb',
              # 'GluGluToZZTo2mu2tau',
              # 'GluGluToZZTo2e2mu',
              # 'GluGluToZZTo4mu',
              # 'ttZToLLNuNu',
-              'VBF_HToMuMu',
+              'vbf_htomumu',
              # 'ZZTo4L_powheg',
              # 'ZZTo2L2Q',
              # 'ZZTo2L2Nu_powheg',
@@ -43,8 +48,11 @@ mcfilelist = [
              # 'WZTo3LNu_powheg',
               'WZ',
               'TTJets_aMC',
-              'DYJets',
-              'DYJets_10to50',
+             # 'DYJets',
+             # 'DYJets_10to50',
+              'DYJets_2J',
+              'DYJets_1J',
+              'DYJets_0J'
              ]#ref : https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToMuMu
 #mcfilelist = ['VBF_HToMuMu','WW','WZ','ZZ','TT_powheg','DYJets','DYJets_10to50']#,'WJets']
 rdfilelist = [
@@ -55,19 +63,17 @@ rdfilelist = [
 
 datasets = json.load(open("%s/src/CATTools/CatAnalyzer/data/dataset/dataset.json" % os.environ['CMSSW_BASE']))
 
-#cut_step = "(step>=5)"
-cut = 'dilep.M()>20&&step>=5'
-#cut = 'filtered==1&&%s&&%s'%(cut_step,emu_pid)
-#cut = 'channel==2'
+cut = 'dilep.M()>20&&step==5&&cat==1'
 print cut
 #weight = 'genweight*puweight*mueffweight*eleffweight*tri'
 weight = 'weight*(mueffweight)'
 plotvar = 'dilep.M()'
 binning = [300, 0, 300]
-x_name = 'mass [GeV]'
-y_name = 'events'
+x_name = 'Invariant Mass [GeV]'
+#x_name = "Transverse Momentum [GeV]"
+y_name = 'Events'
 dolog = False
-f_name = 'll_m'
+f_name = 'VBFT_M'
 
 try:
     opts, args = getopt.getopt(sys.argv[1:],"hdc:w:b:p:x:y:f:j:",["cut","weight","binning","plotvar","x_name","y_name","f_name","json_used","dolog"])
@@ -97,7 +103,7 @@ for opt, arg in opts:
     elif opt in ("-d", "--dolog"):
         dolog = True
 print plotvar, x_name, f_name
-
+"""
 if json_used=='Silver':
     datalumi = 2630 # we should change this to right data luminosity.
     rootfileDir = "%s/src/CATTools/CatAnalyzer/test/results_merged/h2muAnalyzerSilver_" % os.environ['CMSSW_BASE']
@@ -120,7 +126,7 @@ if json_used=='Silver':
     #mcfilelist = ['GG_HToMuMu','WW','WZ','ZZ','TT_powheg','DYJets','DYJets_10to50']#,'WJets'] silver
     rdfilelist = ['SingleMuon_Run2015']
     f_name = "Silver_"+f_name 
-
+"""
 tname = "cattree/nom"
 
 mchistList = []
@@ -158,7 +164,7 @@ for imc,mcname in enumerate(mcfilelist):
     mchist.SetFillColor(colour)
     mchist.SetLineColor(colour)
     mchistList.append(mchist)
-'''
+"""
     for l,lumi in enumerate(lumilist):
         rescale = lumi*data["xsec"]/wentries
         remchist = makeTH1(rfname, tname, title, binning, plotvar, tcut, rescale)    
@@ -186,11 +192,12 @@ for imc,mcname in enumerate(mcfilelist):
             sig[5]+= remchist.Integral(remchist.FindBin(120),remchist.FindBin(130))
         else:
             bg[5]+= remchist.Integral(remchist.FindBin(120),remchist.FindBin(130))
-'''        
+"""        
 print "rdfname: %s\n tname: %s\n binning: %s\n plotvar: %s\n tcut: %s\n"%(rdfname, tname, binning, plotvar, tcut)
-rdhist = makeTH1(rdfname, tname, 'data', binning, plotvar, tcut)
-#drawTH1(f_name, CMS_lumi, mchistList, rdhist, x_name, y_name,dolog)
-
+#rdhist = makeTH1(rdfname, tname, 'data', binning, plotvar, tcut)
+canv = drawTH1(f_name, CMS_lumi, mchistList, rdhist, x_name, y_name,dolog)
+canv.SaveAs(f_name+".png")            
+"""
 print "="*50
 print rfname
 print "="*50
@@ -231,4 +238,4 @@ while (x_min<140):
     if x_min>110:break
 
 f_txt_bw.close()
-
+"""
