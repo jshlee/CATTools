@@ -71,15 +71,16 @@ private:
 
   bool runOnMC;
   vector<TTree*> ttree_;
-  TH1D *h_nevents, *h_cutflow, *h_cutflowCat;
+  TH1D *h_nevents, *h_cutflow, *h_cutflowCat, *h_Tgenweight ;
   int b_run, b_lumi, b_event;
   int b_nvertex, b_step, b_channel, b_njet;
   bool b_step1, b_step2, b_step3, b_step4, b_step5, b_step6, b_filtered;
   float b_tri;
   float b_met, b_weight, b_puweight, b_puweight_up, b_puweight_dn, b_genweight,
     b_mueffweight, b_mueffweight_up, b_mueffweight_dn,b_beffweight, b_trigeffweight,
-    b_eleffweight, b_eleffweight_up, b_eleffweight_dn;
+    b_eleffweight, b_eleffweight_up, b_eleffweight_dn, b_genweightT;
   vector<float> b_pdfWeights, b_scaleWeights;
+
   int size;
   int b_cat;
   int b_cat_eta;
@@ -142,7 +143,8 @@ h2muAnalyzer::h2muAnalyzer(const edm::ParameterSet& iConfig)
   edm::Service<TFileService> fs;
   h_nevents = fs->make<TH1D>("nevents","nevents",1,0,1);       
   h_cutflow = fs->make<TH1D>("cutflow","cutflow",15,0,15);       
-  h_cutflowCat = fs->make<TH1D>("cutflowCat","cutflowCat",6,0,6);       
+  h_cutflowCat = fs->make<TH1D>("cutflowCat","cutflowCat",6,0,6);     
+ // h_Tgenweight = fs->make<TH1D>("Tgenweight","Tgenweight",1000,0,1000);
   for (int sys = 0; sys < syst_total; ++sys){
     ttree_.push_back(fs->make<TTree>(systematicName[systematic(sys)].c_str(), systematicName[systematic(sys)].c_str()));
     auto tr = ttree_.back();
@@ -207,7 +209,9 @@ bool h2muAnalyzer::eventSelection(const edm::Event& iEvent, systematic sys)
     b_trigeffweight = 1;
     b_beffweight = 1;
     h_nevents->Fill(0.5,b_weight);
-    
+   // b_genweightT = b_genweightT + b_genweight;
+   // h_Tgenweight->Fill(b_genweightT);
+
     edm::Handle<reco::GenParticleCollection> genParticles;
     iEvent.getByToken(mcLabel_,genParticles);
     bool bosonSample = false;
@@ -383,9 +387,6 @@ MuonCollection h2muAnalyzer::selectMuons(const MuonCollection& muons, systematic
   MuonCollection selmuons;
   for (auto& m : muons) {
     Muon mu(m);
-    if (b_event == 465){
-        cout << "Muon pt:"<<mu.pt()<<" Muon eta:"<< mu.eta()<<endl;
-    }
     if (!mu.isGlobalMuon()) continue;
     if (!mu.isTrackerMuon()) continue;
     if (abs(mu.eta()) > 2.4) continue;
@@ -570,7 +571,7 @@ void h2muAnalyzer::setBranch(TTree* tr, systematic sys)
   tr->Branch("eleffweight", &b_eleffweight, "eleffweight/F");
   tr->Branch("trigeffweight", &b_trigeffweight, "trigeffweight/F");
   tr->Branch("beffweight", &b_beffweight, "beffweight/F");
-
+  tr->Branch("genweightT",&b_genweightT, "genweightT/F");
   // only save for nomial ttree 
   if (sys != syst_nom) return;
   tr->Branch("run", &b_run, "run/I");
@@ -654,18 +655,12 @@ int h2muAnalyzer::jetCategory(const JetCollection& seljets, float met, float ll_
 	            TLorentzVector dijets = j1.tlv() + j2.tlv();
 	            double delta_eta =  abs(j1.eta() - j2.eta());
                 
-            if ((b_event == 465)||(b_event == 342)){
-                for (int i = 0; i < a; i ++){
-                cout << "check jets1 "<<b_event<< " jet"<<i<<"->pt():" << seljets[i].pt() << " jet"<<i<<"->eta():" << seljets[i].eta() <<" jet"<<i<<"->phi():" << seljets[i].phi()<<endl;
-                cout << dijets.M() << "     "<<abs(delta_eta) <<endl;
-                }
-            } 
-	            if (dijets.M() > 650 && abs(delta_eta) > 3.5){
+	            if ((dijets.M() > 650 && abs(delta_eta) > 3.5)&& (j1.pt() >= 40 || j2.pt() >= 40)) {
                     ofstream file; 
                     file.open("UOS_VBF_Tight.txt", ios::app);
                     file << b_event<< endl;
                     file.close();
-                    int j = seljets.size();
+                    //int j = seljets.size();
                     ofstream VBFT;
                     VBFT.open("vbf-Event_Dump.txt", ios::app);
                     //VBFT<<"------------------------------------------------------------------"<<endl;
@@ -688,7 +683,7 @@ int h2muAnalyzer::jetCategory(const JetCollection& seljets, float met, float ll_
         for (auto& j4 : seljets) {
             if (&j3 !=  &j4){ 
                 TLorentzVector dijets = j3.tlv() + j4.tlv();
-                if (dijets.M() > 250. && ll_pt >= 50.){
+                if ((dijets.M() > 250. && ll_pt >= 50.)&& (j3.pt() >= 40 || j4.pt() >= 40)){
                     ofstream file; 
                     file.open("UOS_ggF_Tight.txt", ios::app);
                     file << b_event<< endl;
