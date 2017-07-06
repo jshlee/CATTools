@@ -23,8 +23,18 @@ with open(dataset_json) as data_file:
         datasetName = i['name']
         if "QCD" in datasetName:
             continue
-        if "ttH" in datasetName:
+        if "Electron" in datasetName:
             continue       
+        if "Photon" in datasetName:
+            continue 
+        if "QCD" in datasetName:
+            continue
+        if "Top" in datasetName:
+            continue 
+        if "powheg" in datasetName:
+            continue
+        if "Double" in datasetName:
+            continue 
         if "ttZ" in datasetName:
             continue
         if "ttW" in datasetName:

@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("h2muAnalyzer")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(5000) )
+#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(5000) )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 process.options.allowUnscheduled = cms.untracked.bool(True)
@@ -23,7 +23,8 @@ process.source.fileNames = cms.untracked.vstring(
     "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170607_170048//0000/catTuple_10.root")
 """
 process.source.fileNames = cms.untracked.vstring(
-    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170607_170048//0000/catTuple_1.root")
+    "file:/xrootd/store/group/CAT/SingleMuon/v8-0-6_Run2016B-03Feb2017_ver2-v2/170424_181015/0000/catTuple_1.root",
+    "file:/xrootd/store/group/CAT/SingleMuon/v8-0-6_Run2016B-03Feb2017_ver2-v2/170424_181015/0000/catTuple_10.root")
 """
 #txtfile = '../data/dataset/dataset_SingleMuon_Run2016E.txt'
 #txtfile = '../data/dataset/dataset_DYJets.txt'
