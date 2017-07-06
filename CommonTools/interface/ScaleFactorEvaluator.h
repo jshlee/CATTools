@@ -3,6 +3,8 @@
 #include <algorithm>
 #include "CATTools/DataFormats/interface/Particle.h"
 
+#pragma once
+
 namespace cat {
 
 class ScaleFactorEvaluator

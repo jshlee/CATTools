@@ -18,45 +18,108 @@ x_name_l    = ["Invariant Mass [GeV]", "Transverse Momentum [GeV]"]
 
 plotvar_l   = ["dilep.M\(\)", "dilep.Pt\(\)"]
 
-binset_l    = ["[300,0,300]", "[250,0,300]", "[200,0,300]"]
+binset_l    = ["[300,0,300]", "[250,0,300]", "[200,0,300]", "[150,0,300]"]
 
+MCat_l      = ["VBFT_M", "GGFT_M", "VBFL_M", "JetT_M", "JetL_M"]
+
+PTCat_l     = ["VBFT_Pt", "GGFT_Pt", "VBFL_Pt", "JetT_Pt", "JetL_Pt"] 
 
 lst         = []
-for i in [1,2,3,4,5]:
-    for b in (plotvar_l):
-        for c in (x_name_l):
+
+User_input = raw_input(" How would you like it listed? b = Bin, c = Cut, p = Plot Name: ") 
+
+if User_input == "c":
+    for i in [0,1,2,3,4]:
+        for b in (plotvar_l):
             for a in (binset_l):
+                for c in (x_name_l):
+                    if a == "[150,0,300]":    
+                        if (b,c) == ("dilep.M\(\)", "Invariant Mass [GeV]"): 
+                            cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -y 'Events/2' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
+                            cmd = cmd + "-f '%s'"%(MCat_l[i])
+                           
+                        elif (b,c) == ('dilep.Pt\(\)', 'Transverse Momentum [GeV]'):
+                            cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -y 'Events/2' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
+                            cmd = cmd +"-f '%s'"%(PTCat_l[i])
 
-                if (b,c) == ("dilep.M\(\)", "Invariant Mass [GeV]"): 
-                    cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -w '%s' -j '%s'"%(std_cut, i, a, b, c, weight, json_used)
-                    if i == 1:
-                        cmd = cmd +' -f \'VBFT_M\''
-                    if i == 2:
-                        cmd = cmd +' -f \'GGFT_M\'' 
-                    if i == 3:
-                        cmd = cmd +' -f \'VBFL_M\'' 
-                    if i == 4:
-                        cmd = cmd +' -f \'JetT_M\''  
-                    if i == 5: 
-                        cmd = cmd +' -f \'JetL_M\'' 
+                        else:
+                            continue
 
-                elif b == 'dilep.Pt\(\)' and c == "Transverse Momentum [GeV]":
-                    cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -w '%s' -j '%s'"%(std_cut, i, a, b, c, weight, json_used)
-                    if i == 1:
-                        cmd = cmd +' -f \'VBFT_Pt\'' 
-                    if i == 2:
-                        cmd = cmd +' -f \'GGFT_Pt\'' 
-                    if i == 3:
-                        cmd = cmd +' -f \'VBFL_Pt\'' 
-                    if i == 4:
-                        cmd = cmd +' -f \'JetT_Pt\'' 
-                    if i == 5: 
-                        cmd = cmd +' -f \'JetL_Pt\''  
-                else:
-                    break
-                cmd = cmd +' > /dev/null &'
-                lst.append(cmd)   
+                    else: 
+                        if (b,c) == ("dilep.M\(\)", "Invariant Mass [GeV]"): 
+                            cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
+                            cmd = cmd + "-f '%s'"%(MCat_l[i])
 
+                        elif (b,c) == ('dilep.Pt\(\)', 'Transverse Momentum [GeV]'):
+                            cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
+                            cmd = cmd +"-f '%s'"%(PTCat_l[i])
+                        
+                        else:
+                            continue
+                    cmd = cmd +' > /dev/null &'
+                    lst.append(cmd)   
+
+if User_input == "b":
+    for a in (binset_l):
+        for b in (plotvar_l):
+            for i in [0,1,2,3,4]:
+                for c in (x_name_l):
+                    if a == "[150,0,300]":    
+                        if (b,c) == ("dilep.M\(\)", "Invariant Mass [GeV]"): 
+                            cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -y 'Events/2' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
+                            cmd = cmd + "-f '%s'"%(MCat_l[i])
+                           
+                        elif (b,c) == ('dilep.Pt\(\)', 'Transverse Momentum [GeV]'):
+                            cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -y 'Events/2' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
+                            cmd = cmd +"-f '%s'"%(PTCat_l[i])
+
+                        else:
+                            continue
+
+                    else: 
+                        if (b,c) == ("dilep.M\(\)", "Invariant Mass [GeV]"): 
+                            cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
+                            cmd = cmd + "-f '%s'"%(MCat_l[i])
+
+                        elif (b,c) == ('dilep.Pt\(\)', 'Transverse Momentum [GeV]'):
+                            cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
+                            cmd = cmd +"-f '%s'"%(PTCat_l[i])
+                        
+                        else:
+                            continue
+                    cmd = cmd +' > /dev/null &'
+                    lst.append(cmd)   
+
+if User_input == "p":
+    for b in (plotvar_l):
+        for a in (binset_l):
+            for i in [0,1,2,3,4]:
+                for c in (x_name_l):
+                    if a == "[150,0,300]":    
+                        if (b,c) == ("dilep.M\(\)", "Invariant Mass [GeV]"): 
+                            cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -y 'Events/2' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
+                            cmd = cmd + "-f '%s'"%(MCat_l[i])
+                           
+                        elif (b,c) == ('dilep.Pt\(\)', 'Transverse Momentum [GeV]'):
+                            cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -y 'Events/2' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
+                            cmd = cmd +"-f '%s'"%(PTCat_l[i])
+
+                        else:
+                            continue
+
+                    else: 
+                        if (b,c) == ("dilep.M\(\)", "Invariant Mass [GeV]"): 
+                            cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
+                            cmd = cmd + "-f '%s'"%(MCat_l[i])
+
+                        elif (b,c) == ('dilep.Pt\(\)', 'Transverse Momentum [GeV]'):
+                            cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
+                            cmd = cmd +"-f '%s'"%(PTCat_l[i])
+                        
+                        else:
+                            continue
+                    cmd = cmd +' > /dev/null &'
+                    lst.append(cmd)   
 for l in lst:
     print l
 
