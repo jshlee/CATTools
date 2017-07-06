@@ -36,11 +36,11 @@ if User_input == "c":
                     if a == "[150,0,300]":    
                         if (b,c) == ("dilep.M\(\)", "Invariant Mass [GeV]"): 
                             cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -y 'Events/2' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
-                            cmd = cmd + "-f '%s'"%(MCat_l[i])
+                            cmd = cmd + " -f '%s'"%(MCat_l[i])
                            
                         elif (b,c) == ('dilep.Pt\(\)', 'Transverse Momentum [GeV]'):
                             cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -y 'Events/2' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
-                            cmd = cmd +"-f '%s'"%(PTCat_l[i])
+                            cmd = cmd +" -f '%s'"%(PTCat_l[i])
 
                         else:
                             continue
@@ -52,7 +52,7 @@ if User_input == "c":
 
                         elif (b,c) == ('dilep.Pt\(\)', 'Transverse Momentum [GeV]'):
                             cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
-                            cmd = cmd +"-f '%s'"%(PTCat_l[i])
+                            cmd = cmd +" -f '%s'"%(PTCat_l[i])
                         
                         else:
                             continue
@@ -67,11 +67,11 @@ if User_input == "b":
                     if a == "[150,0,300]":    
                         if (b,c) == ("dilep.M\(\)", "Invariant Mass [GeV]"): 
                             cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -y 'Events/2' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
-                            cmd = cmd + "-f '%s'"%(MCat_l[i])
+                            cmd = cmd + " -f '%s'"%(MCat_l[i])
                            
                         elif (b,c) == ('dilep.Pt\(\)', 'Transverse Momentum [GeV]'):
                             cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -y 'Events/2' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
-                            cmd = cmd +"-f '%s'"%(PTCat_l[i])
+                            cmd = cmd +" -f '%s'"%(PTCat_l[i])
 
                         else:
                             continue
@@ -79,11 +79,11 @@ if User_input == "b":
                     else: 
                         if (b,c) == ("dilep.M\(\)", "Invariant Mass [GeV]"): 
                             cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
-                            cmd = cmd + "-f '%s'"%(MCat_l[i])
+                            cmd = cmd + " -f '%s'"%(MCat_l[i])
 
                         elif (b,c) == ('dilep.Pt\(\)', 'Transverse Momentum [GeV]'):
                             cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
-                            cmd = cmd +"-f '%s'"%(PTCat_l[i])
+                            cmd = cmd +" -f '%s'"%(PTCat_l[i])
                         
                         else:
                             continue
@@ -98,11 +98,11 @@ if User_input == "p":
                     if a == "[150,0,300]":    
                         if (b,c) == ("dilep.M\(\)", "Invariant Mass [GeV]"): 
                             cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -y 'Events/2' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
-                            cmd = cmd + "-f '%s'"%(MCat_l[i])
+                            cmd = cmd + " -f '%s'"%(MCat_l[i])
                            
                         elif (b,c) == ('dilep.Pt\(\)', 'Transverse Momentum [GeV]'):
                             cmd ="./h2muDraw.py -c \'%s&&cat==%s\' -b %s -p %s -x '%s' -y 'Events/2' -w '%s' -j '%s'"%(std_cut, i+1, a, b, c, weight, json_used)
-                            cmd = cmd +"-f '%s'"%(PTCat_l[i])
+                            cmd = cmd +" -f '%s'"%(PTCat_l[i])
 
                         else:
                             continue

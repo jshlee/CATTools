@@ -17,7 +17,7 @@ h2muDraw.py -c 'll_m>50&&step>=5&&isTight==1&&filtered==1' -b [100,-3,3] -p lep1
 '''
 
 json_used = 'Golden'
-datalumi = 37090 #15.92fb-1
+datalumi = 35900 #15.92fb-1
 version = os.environ['CMSSW_VERSION']
 
 rootfileDir = "/xrootd/store/user/daniellee/cattree/CMSSW_8_0_26_patch1/results_merged/h2muAnalyzer_"
@@ -37,7 +37,6 @@ mcfilelist = [
              # 'GluGluToZZTo2e2mu',
              # 'GluGluToZZTo4mu',
              # 'ttZToLLNuNu',
-              'vbf_htomumu',
              # 'ZZTo4L_powheg',
              # 'ZZTo2L2Q',
              # 'ZZTo2L2Nu_powheg',
@@ -56,14 +55,20 @@ mcfilelist = [
              ]#ref : https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToMuMu
 #mcfilelist = ['VBF_HToMuMu','WW','WZ','ZZ','TT_powheg','DYJets','DYJets_10to50']#,'WJets']
 rdfilelist = [
-              'SingleMuon_Run2016',#mumu
+              'SingleMuon_Run2016',
+              #'SingleMuon_Run2016B',
+              #'SingleMuon_Run2016C',
+              #'SingleMuon_Run2016D',
+              #'SingleMuon_Run2016E',
+              #'SingleMuon_Run2016F',
+              #mumu,
               #'SingleMuon_Run2015C',
               #'SingleMuon_Run2015D'
              ]
 
 datasets = json.load(open("%s/src/CATTools/CatAnalyzer/data/dataset/dataset.json" % os.environ['CMSSW_BASE']))
 
-cut = 'dilep.M()>20&&step==5&&cat==1'
+cut = 'dilep.M()>20&&step==5'
 print cut
 #weight = 'genweight*puweight*mueffweight*eleffweight*tri'
 weight = 'weight*(mueffweight)'
@@ -73,7 +78,7 @@ x_name = 'Invariant Mass [GeV]'
 #x_name = "Transverse Momentum [GeV]"
 y_name = 'Events'
 dolog = False
-f_name = 'VBFT_M'
+f_name = 'Total_M'
 
 try:
     opts, args = getopt.getopt(sys.argv[1:],"hdc:w:b:p:x:y:f:j:",["cut","weight","binning","plotvar","x_name","y_name","f_name","json_used","dolog"])
@@ -145,6 +150,7 @@ if plotvar == 'dilep.M()':
 for imc,mcname in enumerate(mcfilelist):
     data = findDataSet(mcname, datasets)
     scale = datalumi*data["xsec"]
+    print"scale: %s " %(scale)
     colour = data["colour"]
     title = data["title"]
     #if 'DYJets' in mcname: 
@@ -157,8 +163,14 @@ for imc,mcname in enumerate(mcfilelist):
     print rfname
 
     tfile = ROOT.TFile(rfname)
-    wentries = tfile.Get("cattree/nevents").Integral()
-    scale = scale/wentries
+    wentries = tfile.Get("cattree/nevents").GetBinContent(1)
+    genweight = tfile.Get("cattree/nevents").GetBinContent(3)
+    apple = scale/wentries
+    scale = scale/genweight
+    print "scale genweight: %s " %(scale)
+    print "scale wentries: %s" %(apple) 
+    print "genweight: %s" %(genweight)
+    print "wentriest: %s" %(wentries)
    
     mchist = makeTH1(rfname, tname, title, binning, plotvar, tcut, scale)    
     mchist.SetFillColor(colour)
@@ -194,7 +206,7 @@ for imc,mcname in enumerate(mcfilelist):
             bg[5]+= remchist.Integral(remchist.FindBin(120),remchist.FindBin(130))
 """        
 print "rdfname: %s\n tname: %s\n binning: %s\n plotvar: %s\n tcut: %s\n"%(rdfname, tname, binning, plotvar, tcut)
-#rdhist = makeTH1(rdfname, tname, 'data', binning, plotvar, tcut)
+rdhist = makeTH1(rdfname, tname, 'data', binning, plotvar, tcut+'&&(dilep.M()<120||dilep.M()>130)')
 canv = drawTH1(f_name, CMS_lumi, mchistList, rdhist, x_name, y_name,dolog)
 canv.SaveAs(f_name+".png")            
 """
