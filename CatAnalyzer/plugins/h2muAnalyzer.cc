@@ -141,10 +141,9 @@ h2muAnalyzer::h2muAnalyzer(const edm::ParameterSet& iConfig)
 
   usesResource("TFileService");
   edm::Service<TFileService> fs;
-  h_nevents = fs->make<TH1D>("nevents","nevents",1,0,1);       
+  h_nevents = fs->make<TH1D>("nevents","nevents",4,0,4);       
   h_cutflow = fs->make<TH1D>("cutflow","cutflow",15,0,15);       
   h_cutflowCat = fs->make<TH1D>("cutflowCat","cutflowCat",6,0,6);     
- // h_Tgenweight = fs->make<TH1D>("Tgenweight","Tgenweight",1000,0,1000);
   for (int sys = 0; sys < syst_total; ++sys){
     ttree_.push_back(fs->make<TTree>(systematicName[systematic(sys)].c_str(), systematicName[systematic(sys)].c_str()));
     auto tr = ttree_.back();
@@ -209,8 +208,8 @@ bool h2muAnalyzer::eventSelection(const edm::Event& iEvent, systematic sys)
     b_trigeffweight = 1;
     b_beffweight = 1;
     h_nevents->Fill(0.5,b_weight);
-   // b_genweightT = b_genweightT + b_genweight;
-   // h_Tgenweight->Fill(b_genweightT);
+    h_nevents->Fill(2.5,b_genweight);
+    h_nevents->Fill(3.5,1);
 
     edm::Handle<reco::GenParticleCollection> genParticles;
     iEvent.getByToken(mcLabel_,genParticles);
@@ -370,7 +369,7 @@ bool h2muAnalyzer::eventSelection(const edm::Event& iEvent, systematic sys)
   b_cat_eta = etaCategory(b_lep1.Eta(), b_lep2.Eta());
   b_cat = jetCategory(selectedJets, b_met, b_dilep.Pt());
   h_cutflowCat->Fill(b_cat);
-
+  h_nevents->Fill(1.5,b_genweight);
   ofstream eventdump;
   eventdump.open("Event_Dump.txt", ios::app);
   for (int i = 0; i < b_njet; i++)
@@ -458,6 +457,7 @@ MuonCollection h2muAnalyzer::selectMuons(const MuonCollection& muons, systematic
     if (sys == syst_mu_u) mu.setP4(m.p4() * m.shiftedEnUp());
     if (sys == syst_mu_d) mu.setP4(m.p4() * m.shiftedEnDown());
     if (mu.pt() < 10.) continue;
+    if (mu.pt() > 20.) continue;
     if (mu.relIso(0.4) > 0.25) continue;
     selmuons.push_back(mu);
   }
