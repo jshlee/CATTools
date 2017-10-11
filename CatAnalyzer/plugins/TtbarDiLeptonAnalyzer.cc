@@ -16,9 +16,8 @@
 #include "CATTools/CommonTools/interface/TTbarModeDefs.h"
 #include "CATTools/CommonTools/interface/ScaleFactorEvaluator.h"
 #include "CATTools/CatAnalyzer/interface/BTagWeightEvaluator.h"
-// no TtFullLepKinSolver.h at first
+//no TtFullLepKinSolver.h at first
 #include "TopQuarkAnalysis/TopKinFitter/interface/TtFullLepKinSolver.h"
-//
 #include "CATTools/CatAnalyzer/interface/TopTriggerSF.h"
 #include "CATTools/CatAnalyzer/interface/KinematicSolvers.h"
 
@@ -32,14 +31,13 @@
 #include "TH1D.h"
 //no TLoretzVector.h at first
 #include "TLorentzVector.h"
-//
+
 //########### Dstar begin
 #include "CATTools/DataFormats/interface/SecVertex.h"
 #include<TClonesArray.h>
 
 using namespace std;
 using namespace cat;
-
 //########### Dstar end
 
 class TtbarDiLeptonAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources,edm::one::WatchLuminosityBlocks> {
@@ -196,11 +194,11 @@ TtbarDiLeptonAnalyzer::TtbarDiLeptonAnalyzer(const edm::ParameterSet& iConfig)
   // ############## Dstar begin #####################
   //parameterInit(iConfig);
 
-  d0Token_  = consumes<cat::SecVertexCollection>(iConfig.getParameter<edm::InputTag>("d0s"));
-  dstarToken_  = consumes<cat::SecVertexCollection>(iConfig.getParameter<edm::InputTag>("dstars"));
-  JpsiToken_  = consumes<cat::SecVertexCollection>(iConfig.getParameter<edm::InputTag>("Jpsis"));
+  d0Token_ = consumes<cat::SecVertexCollection>(iConfig.getParameter<edm::InputTag>("d0s"));
+  dstarToken_ = consumes<cat::SecVertexCollection>(iConfig.getParameter<edm::InputTag>("dstars"));
+  JpsiToken_ = consumes<cat::SecVertexCollection>(iConfig.getParameter<edm::InputTag>("Jpsis"));
   mcSrc_ = consumes<edm::View<reco::GenParticle> >(iConfig.getParameter<edm::InputTag>("mcLabel"));
-  matchingDeltaR_  = iConfig.getParameter<double>("matchingDeltaR");
+  matchingDeltaR_ = iConfig.getParameter<double>("matchingDeltaR");
 
   // ############## Dstar end #####################
   recoFiltersToken_ = consumes<int>(iConfig.getParameter<edm::InputTag>("recoFilters"));
@@ -321,7 +319,7 @@ int TtbarDiLeptonAnalyzer::isFromtop( const reco::GenParticle& p){
 
 shared_ptr<TLorentzVector> TtbarDiLeptonAnalyzer::mcMatching( vector<TLorentzVector>& aGens, TLorentzVector& aReco) {
   float minDR= 999.;
-  //float minRelPt = 1.0;
+  //float minRelPt = 1.0
   shared_ptr<TLorentzVector> matchedGen;
   for( auto& aGen : aGens ) {
     float deltaR = aGen.DeltaR(aReco);
@@ -395,8 +393,9 @@ bool TtbarDiLeptonAnalyzer::eventSelection(const edm::Event& iEvent, systematic 
     b_weight = b_genweight*b_puweight;
     
     //h_nevents->Fill(0.5,b_weight);
-    h_nevents->Fill(0.5,b_genweight*b_puweight);
   }
+  if (sys == syst_nom) h_nevents->Fill(0.5,b_genweight*b_puweight); 
+  
   // #####################  Dstar begin  ########################
   edm::Handle<cat::SecVertexCollection> d0s;       iEvent.getByToken(d0Token_,d0s);
   edm::Handle<cat::SecVertexCollection> dstars;    iEvent.getByToken(dstarToken_,dstars);
@@ -425,7 +424,7 @@ bool TtbarDiLeptonAnalyzer::eventSelection(const edm::Event& iEvent, systematic 
         nIDMother = isFromtop(aGenParticle);
 
         if ( /*0 == 1 &&*/ abs(nIDMother) != 6 ) {
-	  continue;
+	        continue;
         }
 
         //printf("Sign : %i\n", nIDMother * aGenParticle.pdgId() / abs(aGenParticle.pdgId()));
@@ -439,7 +438,7 @@ bool TtbarDiLeptonAnalyzer::eventSelection(const edm::Event& iEvent, systematic 
         nIDMother = isFromtop(aGenParticle);
 
         if ( /*0 == 1 &&*/ abs(nIDMother) != 6 ) {
-	  continue;
+	        continue;
         }
 
         //printf("Sign : %i\n", nIDMother * aGenParticle.pdgId() / abs(aGenParticle.pdgId()));
@@ -454,7 +453,7 @@ bool TtbarDiLeptonAnalyzer::eventSelection(const edm::Event& iEvent, systematic 
         nIDMother = isFromtop(aGenParticle);
 
         if ( /*0 == 1 &&*/ abs(nIDMother) != 6 ) {
-	  continue;
+	        continue;
         }
 
         //printf("Sign : %i\n", nIDMother * aGenParticle.pdgId() / abs(aGenParticle.pdgId()));
@@ -517,28 +516,31 @@ bool TtbarDiLeptonAnalyzer::eventSelection(const edm::Event& iEvent, systematic 
     if ( runOnMC ) {
       shared_ptr<TLorentzVector> genMatched = mcMatching( gen_d0s, d0_tlv );
       if ( genMatched != nullptr) {
-	b_d0_true.push_back( true );
-	b_d0_dRTrue.push_back( genMatched->DeltaR( d0_tlv ));
-	b_d0_relPtTrue.push_back( (genMatched->Pt()- d0_tlv.Pt())/genMatched->Pt());
+	    b_d0_true.push_back( true );
+    	b_d0_dRTrue.push_back( genMatched->DeltaR( d0_tlv ));
+    	b_d0_relPtTrue.push_back( (genMatched->Pt()- d0_tlv.Pt())/genMatched->Pt());
       }
       else {
-	b_d0_true.push_back( false );
-	b_d0_dRTrue.push_back( -9);
+    	b_d0_true.push_back( false );
+    	b_d0_dRTrue.push_back( -9);
 	b_d0_relPtTrue.push_back(-9);
       }
     }
 
     fQDM = 0;
 
+    //fQDau = x.daughter(0)->charge();
+    //b_dstar_dau1_q.push_back(fQDau);
+    //b_d0_dau1_q.push_back(fQDau);
+    //fQDM += fQDau;
     fQDau = x.daughter(0)->charge();
-    b_dstar_dau1_q.push_back(fQDau);
-    fQDM += fQDau;
-    fQDau = x.daughter(0)->charge();
-    b_dstar_dau1_q.push_back(fQDau);
+    //b_dstar_dau1_q.push_back(fQDau);
+    b_d0_dau1_q.push_back(fQDau);
     fQDM += fQDau;
 
     fQDau = x.daughter(1)->charge();
-    b_dstar_dau2_q.push_back(fQDau);
+    //b_dstar_dau2_q.push_back(fQDau);
+    b_d0_dau2_q.push_back(fQDau);
     fQDM += fQDau;
 
     vecDMMom = ToTLorentzVector(*(x.daughter(0))) + ToTLorentzVector(*(x.daughter(1)));
@@ -812,7 +814,7 @@ bool TtbarDiLeptonAnalyzer::eventSelection(const edm::Event& iEvent, systematic 
     }
   }
 
-  if (selectedJets.size() >1 ){
+  if (selectedJets.size() >= 2 ){
     b_step4 = true;
     if (b_step == 3){
       ++b_step;
@@ -901,16 +903,16 @@ bool TtbarDiLeptonAnalyzer::eventSelection(const edm::Event& iEvent, systematic 
       //else if ( sol2.quality() >= sol1.quality() and sol2.quality() > bestSol.quality() ) bestSol = sol2;
 
       if ( isBjet1 and isBjet2 ) {
-	sol2Bs.push_back(sol1);
-	sol2Bs.push_back(sol2);
+    	sol2Bs.push_back(sol1);
+    	sol2Bs.push_back(sol2);
       }
       else if ( isBjet1 or isBjet2 ) {
-	sol1Bs.push_back(sol1);
-	sol1Bs.push_back(sol2);
+    	sol1Bs.push_back(sol1);
+    	sol1Bs.push_back(sol2);
       }
       else {
-	sol0Bs.push_back(sol1);
-	sol0Bs.push_back(sol2);
+	    sol0Bs.push_back(sol1);
+	    sol0Bs.push_back(sol2);
       }
     }
   }
@@ -954,6 +956,7 @@ bool TtbarDiLeptonAnalyzer::eventSelection(const edm::Event& iEvent, systematic 
   }
   return true;
 }
+
 const reco::Candidate* TtbarDiLeptonAnalyzer::getLast(const reco::Candidate* p) const
 {
   for ( size_t i=0, n=p->numberOfDaughters(); i<n; ++i )
@@ -967,6 +970,7 @@ const reco::Candidate* TtbarDiLeptonAnalyzer::getLast(const reco::Candidate* p) 
 
 
 
+
 cat::MuonCollection TtbarDiLeptonAnalyzer::selectMuons(const cat::MuonCollection& muons, systematic sys)
 {
   cat::MuonCollection selmuons;
@@ -975,6 +979,9 @@ cat::MuonCollection TtbarDiLeptonAnalyzer::selectMuons(const cat::MuonCollection
     if (std::abs(mu.eta()) > 2.4) continue;
     if (!mu.isTightMuon()) continue;
     
+    //if (std::abs(mu.dxy()) > 0.2 ) continue;
+    //if (std::abs(mu.dz()) > 0.5 ) continue;
+
     if (sys == syst_mu_u) mu.setP4(m.p4() * m.shiftedEnUp());
     if (sys == syst_mu_d) mu.setP4(m.p4() * m.shiftedEnDown());
 
@@ -992,18 +999,24 @@ cat::ElectronCollection TtbarDiLeptonAnalyzer::selectElecs(const cat::ElectronCo
   for (auto& e : elecs) {
     cat::Electron el(e);
     if (std::abs(el.eta()) > 2.4) continue;
-    //if ( !el.isTight() ) continue;
+    if ( !el.isTight() ) continue;
     if ((std::abs(el.scEta()) > 1.4442) && (std::abs(el.scEta()) < 1.566)) continue;
     if ( !el.electronID("cutBasedElectronID-Summer16-80X-V1-medium") ) continue;
     //if ( !el.electronID("cutBasedElectronID-Summer16-80X-V1-tight") ) continue;
-    //cout << el.bestTrack()->d0() << endl;
-    //if (std::abs(el.bestTrack()->d0()) > 0.0739 ) continue;
-    //if (std::abs(el.bestTrack()->dz()) > 0.602 ) continue;
     
+    //if (std::abs(el.dxy()) > 0.0351 ) continue;
+    //if (std::abs(el.dz()) > 0.417 ) continue;
+   
+    //if (std::abs(el.dxy()) > 0.0351 ) continue;
+    //if (std::abs(el.dz()) > 0.417 ) continue;
+    
+    //if (std::abs(el.dxy()) > 0.0739 ) continue;
+    //if (std::abs(el.dz()) > 0.602 ) continue;
     if (sys == syst_el_u) el.setP4(e.p4() * e.shiftedEnUp());
     if (sys == syst_el_d) el.setP4(e.p4() * e.shiftedEnDown());
 
     if (el.pt() < 20.) continue;
+//    if (el.relIso(0.3) > 0.0821) continue;
     //if (el.relIso(0.3) > 0.0678) continue;
     //printf("electron with pt %4.1f\n", el.pt());
     selelecs.push_back(el);
@@ -1131,7 +1144,8 @@ void TtbarDiLeptonAnalyzer::setBranch(TTree* tr, systematic sys)
   tr->Branch("pseudolep2_pid", &b_pseudolep2_pid, "pseudolep2_pid/I");    
 
   // only save for nomial ttree 
-  if (sys != syst_nom) return;
+  //if (sys != syst_nom) return;
+  if (sys == syst_nom) {
   tr->Branch("run", &b_run, "run/I");
   tr->Branch("event", &b_event, "event/I");
   
@@ -1169,7 +1183,7 @@ void TtbarDiLeptonAnalyzer::setBranch(TTree* tr, systematic sys)
   tr->Branch("pseudotop2", "TLorentzVector", &b_pseudotop2);
   tr->Branch("pseudottbar", "TLorentzVector", &b_pseudottbar);
   tr->Branch("pseudottbar_dphi", &b_pseudottbar_dphi, "pseudottbar_dphi/F");
-
+  }
 
   // ############### Dstar begin #######################
 
@@ -1206,7 +1220,7 @@ void TtbarDiLeptonAnalyzer::setBranch(TTree* tr, systematic sys)
   tr->Branch("d0_lepSV_dRM","std::vector<float>",&b_d0_lepSV_dRM);
   tr->Branch("d0_lepSV_correctM","std::vector<float>",&b_d0_lepSV_correctM); // for test
 
-  tr->Branch("dstar",    "TClonesArray",&b_dstar    ,32000,0);
+  tr->Branch("dstar","TClonesArray",&b_dstar,32000,0);
   tr->Branch("dstar_dau1","TClonesArray",&b_dstar_dau1,32000,0);
   tr->Branch("dstar_dau2","TClonesArray",&b_dstar_dau2,32000,0);
   tr->Branch("dstar_dau3","TClonesArray",&b_dstar_dau3,32000,0);
@@ -1399,7 +1413,7 @@ bool TtbarDiLeptonAnalyzer::genInformation(const edm::Event& iEvent)
     }
     if (b_partonChannel == CH_FULLLEPTON) keepTtbarSignal = true;
 
-    if ( !(partonTop_genParticles->empty()) ){
+    if ( !(partonTop_genParticles->empty()) && partonTop_genParticles->size()==2 ){
 
       // Get Top quark pairs
       auto parton1 = &partonTop_genParticles->at(0);
@@ -1413,32 +1427,32 @@ bool TtbarDiLeptonAnalyzer::genInformation(const edm::Event& iEvent)
 
       // Get W and b quarks
       if ( parton1 and parton2 ) {
-	const auto partonW1 = parton1->daughter(0);
-	const auto partonB1 = parton1->daughter(1);
-	const auto partonW2 = parton2->daughter(0);
-	const auto partonB2 = parton2->daughter(1);
+	    const auto partonW1 = parton1->daughter(0);
+     	const auto partonB1 = parton1->daughter(1);
+    	const auto partonW2 = parton2->daughter(0);
+    	const auto partonB2 = parton2->daughter(1);
 
-	if ( (partonB1->pt() > 30 && std::abs(partonB1->eta()) < 2.4) &&
-	     (partonB2->pt() > 30 && std::abs(partonB2->eta()) < 2.4))
-	  b_partonInPhaseJet = true;
+	    if ( (partonB1->pt() > 30 && std::abs(partonB1->eta()) < 2.4) &&
+	         (partonB2->pt() > 30 && std::abs(partonB2->eta()) < 2.4))
+	      b_partonInPhaseJet = true;
 
-	// Get W daughters
-	if ( partonW1 and partonW2 and partonB1 and partonB2 ) {
-	  const auto partonW11 = partonW1->daughter(0);
-	  const auto partonW21 = partonW2->daughter(0);
-	  if ( (partonW11->pt() > 20 && std::abs(partonW11->eta()) < 2.4 && (std::abs(partonW11->pdgId()) == 11 || std::abs(partonW11->pdgId()) == 13) ) &&
-	       (partonW21->pt() > 20 && std::abs(partonW21->eta()) < 2.4 && (std::abs(partonW11->pdgId()) == 11 || std::abs(partonW11->pdgId()) == 13) ))
-	    b_partonInPhaseLep = true;
+	    // Get W daughters
+	    if ( partonW1 and partonW2 and partonB1 and partonB2 ) {
+	      const auto partonW11 = partonW1->daughter(0);
+	      const auto partonW21 = partonW2->daughter(0);
+	      if ( (partonW11->pt() > 20 && std::abs(partonW11->eta()) < 2.4 && (std::abs(partonW11->pdgId()) == 11 || std::abs(partonW11->pdgId()) == 13) ) &&
+	           (partonW21->pt() > 20 && std::abs(partonW21->eta()) < 2.4 && (std::abs(partonW11->pdgId()) == 11 || std::abs(partonW11->pdgId()) == 13) ))
+	        b_partonInPhaseLep = true;
 
-	  // Fill lepton informations
-	  b_partonlep1 = ToTLorentzVector(*partonW11);
-	  b_partonlep2 = ToTLorentzVector(*partonW21);
-	  b_partonlep1_pid = partonW11->pdgId();
-	  b_partonlep2_pid = partonW21->pdgId();
-	  b_partondilep = b_partonlep1 + b_partonlep2;
-	  b_partonjet1 = ToTLorentzVector(*partonB1);
-	  b_partonjet2 = ToTLorentzVector(*partonB2);
-	}
+	      // Fill lepton informations
+	      b_partonlep1 = ToTLorentzVector(*partonW11);
+    	  b_partonlep2 = ToTLorentzVector(*partonW21);
+	      b_partonlep1_pid = partonW11->pdgId();
+    	  b_partonlep2_pid = partonW21->pdgId();
+    	  b_partondilep = b_partonlep1 + b_partonlep2;
+    	  b_partonjet1 = ToTLorentzVector(*partonB1);
+    	  b_partonjet2 = ToTLorentzVector(*partonB2);
+	    }
       }
       if (b_partonInPhaseJet && b_partonInPhaseLep) b_partonInPhase = true;
     }
@@ -1458,10 +1472,10 @@ bool TtbarDiLeptonAnalyzer::genInformation(const edm::Event& iEvent)
       std::vector<size_t> leptonIdxs, neutrinoIdxs, bjetIdxs;
       // Lepton acceptance cuts
       for ( size_t i=0, n=pseudoTopLeptonHandle->size(); i<n; ++i ) {
-	const auto& x = pseudoTopLeptonHandle->at(i);
-	if ( x.pt() < 20 or std::abs(x.eta()) > 2.4 ) continue;
-	if ( abs(x.pdgId()) != 11 and abs(x.pdgId()) != 13 ) continue;
-	leptonIdxs.push_back(i);
+	    const auto& x = pseudoTopLeptonHandle->at(i);
+	    if ( x.pt() < 20 or std::abs(x.eta()) > 2.4 ) continue;
+	    if ( abs(x.pdgId()) != 11 and abs(x.pdgId()) != 13 ) continue;
+	    leptonIdxs.push_back(i);
       }
       if ( leptonIdxs.size() < 2 ) break;
       std::nth_element(leptonIdxs.begin(), leptonIdxs.begin()+2, leptonIdxs.end(),
@@ -1483,10 +1497,10 @@ bool TtbarDiLeptonAnalyzer::genInformation(const edm::Event& iEvent)
 
       // Jet acceptance and generator level b tag
       for ( size_t i=0, n=pseudoTopJetHandle->size(); i<n; ++i ) {
-	const auto& x = pseudoTopJetHandle->at(i);
-	if ( x.pt() < 30 or std::abs(x.eta()) > 2.4 ) continue;
-	if ( abs(x.pdgId()) != 5 ) continue;
-	bjetIdxs.push_back(i);
+    	const auto& x = pseudoTopJetHandle->at(i);
+    	if ( x.pt() < 30 or std::abs(x.eta()) > 2.4 ) continue;
+    	if ( abs(x.pdgId()) != 5 ) continue;
+    	bjetIdxs.push_back(i);
       }
       if ( bjetIdxs.size() < 2 ) break;
       std::nth_element(bjetIdxs.begin(), bjetIdxs.begin()+2, bjetIdxs.end(),
@@ -1497,13 +1511,13 @@ bool TtbarDiLeptonAnalyzer::genInformation(const edm::Event& iEvent)
       auto w1 = lepton1 + nu1;
       auto w2 = lepton2 + nu2;
       if ( true ) {
-	const auto w1Alt = lepton1 + nu2;
-	const auto w2Alt = lepton2 + nu1;
+    	const auto w1Alt = lepton1 + nu2;
+    	const auto w2Alt = lepton2 + nu1;
 
-	const double wMass = 80.4;
-	const double dm = std::abs(w1.mass()-wMass)+std::abs(w2.mass()-wMass);
-	const double dmAlt = std::abs(w1Alt.mass()-wMass)+std::abs(w2Alt.mass()-wMass);
-	if ( dm > dmAlt ) { w1 = w1Alt; w2 = w2Alt; std::swap(nu1, nu2); }
+    	const double wMass = 80.4;
+    	const double dm = std::abs(w1.mass()-wMass)+std::abs(w2.mass()-wMass);
+    	const double dmAlt = std::abs(w1Alt.mass()-wMass)+std::abs(w2Alt.mass()-wMass);
+    	if ( dm > dmAlt ) { w1 = w1Alt; w2 = w2Alt; std::swap(nu1, nu2); }
       }
       // Do the top combinations
       auto gentop1 = w1 + bjet1;
