@@ -15,7 +15,7 @@ if "results_merged" not in os.listdir(os.getcwd()):
 """
 
 version="%s"%os.environ["CMSSW_VERSION"]
-pstored="/xrootd/store/user/%s/cattree/%s/"%(os.environ['USER'],os.environ["CMSSW_VERSION"])
+pstored="/xrootd/store/user/%s/cattreeExtMu/%s/"%(os.environ['USER'],os.environ["CMSSW_VERSION"])
 pmerged=pstored+"results_merged/" 
 
 if pmerged not in os.listdir(pstored):
