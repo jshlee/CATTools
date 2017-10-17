@@ -1,27 +1,34 @@
 import FWCore.ParameterSet.Config as cms
+#from FWCore.PythonUtilities.LumiList import LumiList
 process = cms.Process("h2muAnalyzer")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(5000) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 process.options.allowUnscheduled = cms.untracked.bool(True)
 
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring())
 from CATTools.Validation.commonTestInput_cff import commonTestCATTuples
 #process.source.fileNames = commonTestCATTuples["sig"]
-process.source.fileNames = cms.untracked.vstring(
-    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170303_114412/0000/catTuple_1.root",
-    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170303_114412/0000/catTuple_2.root",
-    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170303_114412/0000/catTuple_3.root",
-    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170303_114412/0000/catTuple_4.root",
-    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170303_114412/0000/catTuple_5.root",
-    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170303_114412/0000/catTuple_6.root",
-    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170303_114412/0000/catTuple_7.root",
-    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170303_114412/0000/catTuple_8.root",
-    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170303_114412/0000/catTuple_9.root",
-    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170303_114412/0000/catTuple_10.root" )
 
+process.source.fileNames = cms.untracked.vstring(
+    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170607_170048/0000/catTuple_1.root",
+    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170607_170048/0000/catTuple_2.root",
+    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170607_170048/0000/catTuple_3.root",
+    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170607_170048/0000/catTuple_4.root",
+    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170607_170048/0000/catTuple_5.root",
+    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170607_170048/0000/catTuple_6.root",
+    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170607_170048/0000/catTuple_7.root",
+    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170607_170048/0000/catTuple_8.root",
+    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170607_170048/0000/catTuple_9.root",
+    "file:/xrootd/store/group/CAT/GluGlu_HToMuMu_M125_13TeV_powheg_pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170607_170048/0000/catTuple_10.root",)
+    
+"""
+process.source.fileNames = cms.untracked.vstring(
+    "file:/xrootd/store/group/CAT/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/v8-0-6_RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/170303_103000/0000/catTuple_1.root"
+        )
+"""
 #txtfile = '../data/dataset/dataset_SingleMuon_Run2016E.txt'
 #txtfile = '../data/dataset/dataset_DYJets.txt'
 #f = open(txtfile)
@@ -29,7 +36,8 @@ process.source.fileNames = cms.untracked.vstring(
 #    if '#' not in line:
 #        process.source.fileNames.append(line)
 #print process.source.fileNames
-
+#lumiList = LumiList('Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt')
+#process.source.lumisToProcess = lumiList.getVLuminosityBlockRange()
 process.load("CATTools.CatAnalyzer.filters_cff")
 process.load("CATTools.CatAnalyzer.flatGenWeights_cfi")
 from CATTools.CatAnalyzer.leptonSF_cff import *
