@@ -55,7 +55,8 @@ RunFiles = [
               'SingleMuon_Run2016E',
               'SingleMuon_Run2016F',
               'SingleMuon_Run2016G',
-              'SingleMuon_Run2016H',
+              'SingleMuon_Run2016H_v2',
+              'SingleMuon_Run2016H_v3',
               ]
 import os,json
 datadir = os.environ["CMSSW_BASE"]+'/src/CATTools/CatAnalyzer/data/dataset/'
