@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-//only jets that pass though the jet selection are considered for the b-jet veto 
-
-=======
->>>>>>> 88b25adfcbdc252c852bca02d15f8d16c9a7e0c0
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
