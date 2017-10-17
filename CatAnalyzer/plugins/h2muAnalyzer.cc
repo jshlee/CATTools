@@ -1,6 +1,9 @@
+<<<<<<< HEAD
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //only jets that pass though the jet selection are considered for the b-jet veto 
 
+=======
+>>>>>>> 88b25adfcbdc252c852bca02d15f8d16c9a7e0c0
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -150,10 +153,16 @@ h2muAnalyzer::h2muAnalyzer(const edm::ParameterSet& iConfig)
 
   usesResource("TFileService");
   edm::Service<TFileService> fs;
+<<<<<<< HEAD
   h_nevents = fs->make<TH1D>("nevents","nevents",3,0,3);       
   h_cutflow = fs->make<TH1D>("cutflow","cutflow",15,0,15);       
   h_cutflowCat = fs->make<TH1D>("cutflowCat","cutflowCat",6,0,6);     
   
+=======
+  h_nevents = fs->make<TH1D>("nevents","nevents",4,0,4);       
+  h_cutflow = fs->make<TH1D>("cutflow","cutflow",15,0,15);       
+  h_cutflowCat = fs->make<TH1D>("cutflowCat","cutflowCat",6,0,6);     
+>>>>>>> 88b25adfcbdc252c852bca02d15f8d16c9a7e0c0
   for (int sys = 0; sys < syst_total; ++sys){
     ttree_.push_back(fs->make<TTree>(systematicName[systematic(sys)].c_str(), systematicName[systematic(sys)].c_str()));
     auto tr = ttree_.back();
@@ -217,8 +226,13 @@ bool h2muAnalyzer::eventSelection(const edm::Event& iEvent, systematic sys)
     b_trigeffweight = 1;
     b_beffweight = 1;
     h_nevents->Fill(0.5,b_weight);
+<<<<<<< HEAD
     h_nevents->Fill(1.5,b_genweight);
     h_nevents->Fill(2.5,1);
+=======
+    h_nevents->Fill(2.5,b_genweight);
+    h_nevents->Fill(3.5,1);
+>>>>>>> 88b25adfcbdc252c852bca02d15f8d16c9a7e0c0
 
     edm::Handle<reco::GenParticleCollection> genParticles;
     iEvent.getByToken(mcLabel_,genParticles);
@@ -333,6 +347,8 @@ bool h2muAnalyzer::eventSelection(const edm::Event& iEvent, systematic sys)
   //if (b_dilep.M() < 60) return false; 
   if (sys == syst_nom) h_cutflow->Fill(5);
 
+  if (b_dilep.M() < 12) return false; 
+  if (sys == syst_nom) h_cutflow->Fill(4);
   b_isLoose = (mu1.isLooseMuon() && mu2.isLooseMuon());
   b_isMedium = (mu1.isMediumMuon() && mu2.isMediumMuon());
   b_isTight = (mu1.isTightMuon() && mu2.isTightMuon());
@@ -369,6 +385,7 @@ bool h2muAnalyzer::eventSelection(const edm::Event& iEvent, systematic sys)
   AnalysisHelper trigHelper = AnalysisHelper(triggerNames, triggerBits, triggerObjects);
 
   if (!trigHelper.triggerFired("HLT_IsoMu24_v") && !trigHelper.triggerFired("HLT_IsoTkMu24_v")){
+
   //if (!trigHelper.triggerFired("HLT_IsoMu24_v")) {
     return false ; //~~~~~~~~ fix  
   }

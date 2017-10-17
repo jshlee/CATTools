@@ -34,6 +34,7 @@ mcfilelist = [
               'ZH_HToMuMu',
               'VBF_HToMuMu',
               'GG_HToMuMu',
+              'ttH_nonbb',
              # 'GluGluToZZTo2mu2tau',
              # 'GluGluToZZTo2e2mu',
              # 'GluGluToZZTo4mu',
@@ -176,6 +177,7 @@ for imc,mcname in enumerate(mcfilelist):
    #     scale = datalumi*6025.2
    # else:
     scale = datalumi*data["xsec"]
+    print"scale: %s " %(scale)
     colour = data["colour"]
     title = data["title"]
     #if 'DYJets' in mcname: 
@@ -230,11 +232,6 @@ rdhist = makeTH1(rdfname, tname, 'data', binning, plotvar, cut+'&&(dilep.M()<120
 rdhist.SetMinimum(minp)  
 rdhist.SetMaximum(maxp)
 canv = drawTH1(f_name, CMS_lumi, mchistList, rdhist, x_name, y_name,dolog)
-#mainPad = canv.GetPrimitive("mainPad")
-#mainPad.cd()
-#McRoot = ROOT.TFile("./allComp.root")
-#mctree = McRoot.Get("tpTree/LooseIso4_NUM_LooseRelIso_DEN_MediumID_PAR_pt/fit_eff_plots/pt_PLOT_Medium2016_pass").FindObject("hxy_fit_eff")
-#mctree.Draw()
 canv.SaveAs(f_name+".png")            
 """
 print "="*50
